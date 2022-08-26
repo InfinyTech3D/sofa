@@ -548,45 +548,50 @@ void MeshTopology::init()
             m_upperElementType = sofa::core::topology::TopologyElementType::EDGE;
     }
 
+    initContainers();
+}
+
+void MeshTopology::initContainers()
+{
     // compute the number of points, if the topology is charged from the scene or if it was loaded from a MeshLoader without any points data.
-    if (nbPoints==0)
+    if (nbPoints == 0)
     {
         unsigned int n = 0;
-        for (unsigned int i=0; i<seqEdges.getValue().size(); i++)
+        for (unsigned int i = 0; i < seqEdges.getValue().size(); i++)
         {
-            for (unsigned int j=0; j<seqEdges.getValue()[i].size(); j++)
+            for (unsigned int j = 0; j < seqEdges.getValue()[i].size(); j++)
             {
                 if (n <= seqEdges.getValue()[i][j])
                     n = 1 + seqEdges.getValue()[i][j];
             }
         }
-        for (unsigned int i=0; i<seqTriangles.getValue().size(); i++)
+        for (unsigned int i = 0; i < seqTriangles.getValue().size(); i++)
         {
-            for (unsigned int j=0; j<seqTriangles.getValue()[i].size(); j++)
+            for (unsigned int j = 0; j < seqTriangles.getValue()[i].size(); j++)
             {
                 if (n <= seqTriangles.getValue()[i][j])
                     n = 1 + seqTriangles.getValue()[i][j];
             }
         }
-        for (unsigned int i=0; i<seqQuads.getValue().size(); i++)
+        for (unsigned int i = 0; i < seqQuads.getValue().size(); i++)
         {
-            for (unsigned int j=0; j<seqQuads.getValue()[i].size(); j++)
+            for (unsigned int j = 0; j < seqQuads.getValue()[i].size(); j++)
             {
                 if (n <= seqQuads.getValue()[i][j])
                     n = 1 + seqQuads.getValue()[i][j];
             }
         }
-        for (unsigned int i=0; i<seqTetrahedra.getValue().size(); i++)
+        for (unsigned int i = 0; i < seqTetrahedra.getValue().size(); i++)
         {
-            for (unsigned int j=0; j<seqTetrahedra.getValue()[i].size(); j++)
+            for (unsigned int j = 0; j < seqTetrahedra.getValue()[i].size(); j++)
             {
                 if (n <= seqTetrahedra.getValue()[i][j])
                     n = 1 + seqTetrahedra.getValue()[i][j];
             }
         }
-        for (unsigned int i=0; i<seqHexahedra.getValue().size(); i++)
+        for (unsigned int i = 0; i < seqHexahedra.getValue().size(); i++)
         {
-            for (unsigned int j=0; j<seqHexahedra.getValue()[i].size(); j++)
+            for (unsigned int j = 0; j < seqHexahedra.getValue()[i].size(); j++)
             {
                 if (n <= seqHexahedra.getValue()[i][j])
                     n = 1 + seqHexahedra.getValue()[i][j];
@@ -596,9 +601,9 @@ void MeshTopology::init()
         nbPoints = n;
     }
 
-    if(seqEdges.getValue().empty() )
+    if (seqEdges.getValue().empty())
     {
-        if(seqEdges.getParent() != nullptr )
+        if (seqEdges.getParent() != nullptr)
         {
             seqEdges.delInput(seqEdges.getParent());
         }
@@ -606,9 +611,9 @@ void MeshTopology::init()
         edgeUpdate->setName("edgeUpdate");
         this->addSlave(edgeUpdate);
     }
-    if(seqTriangles.getValue().empty() )
+    if (seqTriangles.getValue().empty())
     {
-        if(seqTriangles.getParent() != nullptr)
+        if (seqTriangles.getParent() != nullptr)
         {
             seqTriangles.delInput(seqTriangles.getParent());
         }
@@ -616,9 +621,9 @@ void MeshTopology::init()
         triangleUpdate->setName("triangleUpdate");
         this->addSlave(triangleUpdate);
     }
-    if(seqQuads.getValue().empty() )
+    if (seqQuads.getValue().empty())
     {
-        if(seqQuads.getParent() != nullptr )
+        if (seqQuads.getParent() != nullptr)
         {
             seqQuads.delInput(seqQuads.getParent());
         }
