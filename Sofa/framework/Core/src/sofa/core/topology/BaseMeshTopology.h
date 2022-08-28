@@ -26,13 +26,7 @@
 #include <sofa/core/topology/Topology.h>
 #include <sofa/core/objectmodel/DataFileName.h>
 
-namespace sofa
-{
-
-namespace core
-{
-
-namespace topology
+namespace sofa::core::topology
 {
 
 class SOFA_CORE_API BaseMeshTopology : public core::topology::Topology
@@ -44,28 +38,28 @@ public:
     SOFA_ATTRIBUTE_DISABLED("v20.12 (PR#1515)", "v21.06", "Use sofa::Index instead of sofa::core::topology::BaseMeshTopology::index_type")
     typedef DeprecatedAndRemoved index_type;
 
-    typedef sofa::type::vector<Edge> 		        SeqEdges;
-    typedef sofa::type::vector<Triangle>		    SeqTriangles;
-    typedef sofa::type::vector<Quad>		        SeqQuads;
-    typedef sofa::type::vector<Tetra>		        SeqTetrahedra;
-    typedef sofa::type::vector<Hexa>		        SeqHexahedra;
+    using SeqEdges      = sofa::type::vector<Edge>;
+    using SeqTriangles  = sofa::type::vector<Triangle>;
+    using SeqQuads      = sofa::type::vector<Quad>;
+    using SeqTetrahedra = sofa::type::vector<Tetra>;
+    using SeqHexahedra  = sofa::type::vector<Hexa>;
 
     /// @name Deprecated types, for backward-compatibility
     /// @{
-    typedef EdgeID		                LineID;
-    typedef Edge		                Line;
-    typedef SeqEdges	                SeqLines;
+    using LineID    = EdgeID;
+    using Line      = Edge;
+    using SeqLines  = SeqEdges;
     /// @}
 
     /// fixed-size neighbors arrays
     /// @{
-    typedef sofa::type::fixed_array<EdgeID,3>		EdgesInTriangle;
-    typedef sofa::type::fixed_array<EdgeID,4>		EdgesInQuad;
-    typedef sofa::type::fixed_array<TriangleID,4>	TrianglesInTetrahedron;
-    typedef sofa::type::fixed_array<EdgeID,6>		EdgesInTetrahedron;
-    typedef sofa::type::fixed_array<QuadID,6>		QuadsInHexahedron;
-    typedef sofa::type::fixed_array<EdgeID,12>    EdgesInHexahedron;
-
+    using EdgesInTriangle           = sofa::type::fixed_array<EdgeID, 3>;
+    using EdgesInQuad               = sofa::type::fixed_array<EdgeID, 4>;
+    using TrianglesInTetrahedron    = sofa::type::fixed_array<TriangleID, 4>;
+    using EdgesInTetrahedron        = sofa::type::fixed_array<EdgeID, 6>;
+    using QuadsInHexahedron         = sofa::type::fixed_array<QuadID, 6>;
+    using EdgesInHexahedron         = sofa::type::fixed_array<EdgeID, 12>;
+        
     static EdgesInTriangle        InvalidEdgesInTriangles;
     static EdgesInQuad            InvalidEdgesInQuad;
     static TrianglesInTetrahedron InvalidTrianglesInTetrahedron;
@@ -77,18 +71,18 @@ public:
 
     /// dynamic-size neighbors arrays
     /// @{
-    typedef sofa::type::vector<PointID>		    VerticesAroundVertex;
-    typedef sofa::type::vector<EdgeID>			EdgesAroundVertex;
-    typedef sofa::type::vector<TriangleID>	    TrianglesAroundVertex;
-    typedef sofa::type::vector<QuadID>			QuadsAroundVertex;
-    typedef sofa::type::vector<TetraID>		    TetrahedraAroundVertex;
-    typedef sofa::type::vector<HexaID>			HexahedraAroundVertex;
-    typedef sofa::type::vector<TriangleID>	    TrianglesAroundEdge;
-    typedef sofa::type::vector<QuadID>			QuadsAroundEdge;
-    typedef sofa::type::vector<TetraID>		    TetrahedraAroundEdge;
-    typedef sofa::type::vector<HexaID>			HexahedraAroundEdge;
-    typedef sofa::type::vector<TetraID>		    TetrahedraAroundTriangle;
-    typedef sofa::type::vector<HexaID>			HexahedraAroundQuad;
+    using VerticesAroundVertex      = sofa::type::vector<PointID>;
+    using EdgesAroundVertex         = sofa::type::vector<EdgeID>;
+    using TrianglesAroundVertex     = sofa::type::vector<TriangleID>;
+    using QuadsAroundVertex         = sofa::type::vector<QuadID>;
+    using TetrahedraAroundVertex    = sofa::type::vector<TetraID>;
+    using HexahedraAroundVertex     = sofa::type::vector<HexaID>;
+    using TrianglesAroundEdge       = sofa::type::vector<TriangleID>;
+    using QuadsAroundEdge           = sofa::type::vector<QuadID>;
+    using TetrahedraAroundEdge      = sofa::type::vector<TetraID>;
+    using HexahedraAroundEdge       = sofa::type::vector<HexaID>;
+    using TetrahedraAroundTriangle  = sofa::type::vector<TetraID>;
+    using HexahedraAroundQuad       = sofa::type::vector<HexaID>;    
     /// @}
 protected:
     BaseMeshTopology()	;
@@ -327,10 +321,6 @@ public:
 
 };
 
-} // namespace topology
-
-} // namespace core
-
-} // namespace sofa
+} // namespace sofa::core::topology
 
 #endif
