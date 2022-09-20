@@ -53,6 +53,25 @@ void TopologyDataHandler<TopologyElementType,  VecT>::init()
     if (m_prefix.empty()) m_prefix = "TopologyDataHandler( " + this->m_topologyData->getOwner()->getName() + " )";
     m_data_name = this->m_topologyData->getName();
     this->addOutput(this->m_topologyData);
+
+  /*  TopologyChangeElementInfo elem;
+  
+    this->addCallBack(elem.EINFOADDED, [this](const core::topology::TopologyChange* eventTopo) {
+        this->ApplyTopologyChange(static_cast<const ElementAdded*>(eventTopo));
+    });
+    
+    this->addCallBack(elem.EINFOREMOVED, [this](const core::topology::TopologyChange* eventTopo) {
+        this->ApplyTopologyChange(static_cast<const ElementRemoved*>(eventTopo));
+    });
+
+    this->addCallBack(elem.EINFORENUMBERING, [this](const core::topology::TopologyChange* eventTopo) {
+        this->ApplyTopologyChange(static_cast<const ElementRenumbering*>(eventTopo));
+    });
+
+    this->addCallBack(elem.EINFOSWAP, [this](const core::topology::TopologyChange* eventTopo) {
+        this->ApplyTopologyChange(static_cast<const ElementIndicesSwap*>(eventTopo));
+    });
+ */   
 }
 
 
@@ -112,7 +131,7 @@ void TopologyDataHandler<TopologyElementType, VecT>::unlinkFromTopologyDataArray
 
 /// Apply swap between indices elements.
 template <typename TopologyElementType, typename VecT>
-void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const EIndicesSwap* event)
+void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const ElementIndicesSwap* event)
 {
     m_topologyData->swap(event->index[0], event->index[1]);
 }
@@ -120,7 +139,7 @@ void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const 
 
 /// Apply adding elements.
 template <typename TopologyElementType, typename VecT>
-void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const EAdded* event)
+void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const ElementAdded* event)
 {
     m_topologyData->add(event->getIndexArray(), event->getElementArray(),
         event->ancestorsList, event->coefs, event->ancestorElems);
@@ -128,21 +147,21 @@ void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const 
 
 /// Apply removing elements.
 template <typename TopologyElementType, typename VecT>
-void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const ERemoved* event)
+void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const ElementRemoved* event)
 {
     m_topologyData->remove(event->getArray());
 }
 
 /// Apply renumbering on elements.
 template <typename TopologyElementType, typename VecT>
-void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const ERenumbering* event)
+void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const ElementRenumbering* event)
 {
     m_topologyData->renumber(event->getIndexArray());
 }
 
 /// Apply moving elements.
 template <typename TopologyElementType, typename VecT>
-void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const EMoved* /*event*/)
+void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const ElementMoved* /*event*/)
 {
     msg_warning(m_topologyData->getOwner()) << "MOVED topology event not handled on " << ElementInfo::name()
         << " (it should not even exist!)";

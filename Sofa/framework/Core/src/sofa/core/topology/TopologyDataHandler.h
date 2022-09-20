@@ -41,29 +41,19 @@ template< class TopologyElementType, class VecT>
 class TopologyDataHandler : public sofa::core::topology::TopologyHandler
 {
 public:
-    typedef VecT container_type;
-    typedef typename container_type::value_type value_type;
-    typedef sofa::core::topology::BaseTopologyData<VecT> t_topologicalData;
+    typedef typename VecT::value_type value_type;
+    using t_topologicalData = sofa::core::topology::BaseTopologyData<VecT>;
 
-    typedef core::topology::TopologyElementInfo<TopologyElementType> ElementInfo;
-    typedef core::topology::TopologyChangeElementInfo<TopologyElementType> ChangeElementInfo;
-
-    typedef core::topology::BaseMeshTopology::Point Point;
-    typedef core::topology::BaseMeshTopology::Edge Edge;
-    typedef core::topology::BaseMeshTopology::Triangle Triangle;
-    typedef core::topology::BaseMeshTopology::Quad Quad;
-    typedef core::topology::BaseMeshTopology::Tetrahedron Tetrahedron;
-    typedef core::topology::BaseMeshTopology::Hexahedron Hexahedron;
+    using ElementInfo = sofa::geometry::ElementInfo<TopologyElementType>;
+    using TopologyChangeElementInfo = core::topology::TopologyChangeElementInfo<TopologyElementType>;
 
     // Event types (EMoved* are not used for all element types, i.e. Point vs others)
-    typedef typename ChangeElementInfo::EIndicesSwap    EIndicesSwap;
-    typedef typename ChangeElementInfo::ERenumbering    ERenumbering;
-    typedef typename ChangeElementInfo::EAdded          EAdded;
-    typedef typename ChangeElementInfo::ERemoved        ERemoved;
-    typedef typename ChangeElementInfo::EMoved          EMoved;
-    typedef typename ChangeElementInfo::EMoved_Removing EMoved_Removing;
-    typedef typename ChangeElementInfo::EMoved_Adding   EMoved_Adding;
-    typedef typename ChangeElementInfo::AncestorElem    AncestorElem;
+    typedef typename TopologyChangeElementInfo::EIndicesSwap    ElementIndicesSwap;
+    typedef typename TopologyChangeElementInfo::ERenumbering    ElementRenumbering;
+    typedef typename TopologyChangeElementInfo::EAdded          ElementAdded;
+    typedef typename TopologyChangeElementInfo::ERemoved        ElementRemoved;
+    typedef typename TopologyChangeElementInfo::EMoved          ElementMoved;
+    typedef typename TopologyChangeElementInfo::AncestorElem    AncestorElem;
 
     TopologyDataHandler(t_topologicalData* _topologicalData,
         sofa::core::topology::BaseMeshTopology* _topology, 
@@ -88,15 +78,15 @@ public:
     using TopologyHandler::ApplyTopologyChange;
 
     /// Apply swap between indices elements.
-    virtual void ApplyTopologyChange(const EIndicesSwap* event) override;
+    void ApplyTopologyChange(const ElementIndicesSwap* event) override;
     /// Apply adding elements.
-    virtual void ApplyTopologyChange(const EAdded* event) override;
+    void ApplyTopologyChange(const ElementAdded* event) override;
     /// Apply removing elements.
-    virtual void ApplyTopologyChange(const ERemoved* event) override;
+    void ApplyTopologyChange(const ElementRemoved* event) override;
     /// Apply renumbering on elements.
-    virtual void ApplyTopologyChange(const ERenumbering* event) override;
+    void ApplyTopologyChange(const ElementRenumbering* event) override;
     /// Apply moving elements.
-    virtual void ApplyTopologyChange(const EMoved* event) override;
+    void ApplyTopologyChange(const ElementMoved* event) override;
     /// Apply adding function on moved elements.
     //virtual void ApplyTopologyChange(const EMoved_Adding* event) override;
     ///// Apply removing function on moved elements.
