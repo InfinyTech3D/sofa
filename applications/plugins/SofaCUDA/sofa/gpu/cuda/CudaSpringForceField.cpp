@@ -38,6 +38,7 @@ template class SOFA_GPU_CUDA_API PairInteractionForceField<sofa::gpu::cuda::Cuda
 
 } // namespace sofa::core::behavior
 
+//} // namespace sofa::component::interactionforcefield
 
 namespace sofa::component::solidmechanics::spring
 {

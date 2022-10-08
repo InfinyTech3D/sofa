@@ -26,6 +26,9 @@
 #include <sofa/simulation/graph/SimpleApi.h>
 #include <sofa/simulation/Node.h>
 
+#include <sofa/helper/system/thread/CTime.h>
+#include <limits>
+
 using sofa::testing::BaseSimulationTest;
 
 namespace 
@@ -33,6 +36,8 @@ namespace
 
 using namespace sofa::component::topology::container::dynamic;
 using namespace sofa::simulation;
+
+using sofa::helper::system::thread::ctime_t;
 
 /**  Test TopologicalChangeProcessor incise process
   */
@@ -287,6 +292,98 @@ struct RemoveTetrahedronProcessor_test : TopologicalChangeProcessor_test
         EXPECT_EQ(topoCon->getNbTriangles(), 97);
         EXPECT_EQ(topoCon->getNbEdges(), 86);
         EXPECT_EQ(topoCon->getNbPoints(), 25);
+
+        return true;
+    }
+};
+
+
+struct RemoveTetrahedronPerformance_test : TopologicalChangeProcessor_test
+{
+    RemoveTetrahedronPerformance_test() : TopologicalChangeProcessor_test()
+    {
+        m_fileName = "/TopologicalModifiers/RemovingTetra2TriangleProcess_performanceTest.scn";
+    }
+
+    bool testTopologyChanges() override
+    {
+        Node::SPtr root = m_instance.root;
+
+        if (!root)
+        {
+            ADD_FAILURE() << "Error while loading the scene: " << m_fileName << std::endl;
+            return false;
+        }
+
+
+        Node::SPtr nodeTopo = root.get()->getChild("TT");
+        if (!nodeTopo)
+        {
+            ADD_FAILURE() << "Error 'TT' Node not found in scene: " << m_fileName << std::endl;
+            return false;
+        }
+
+        TetrahedronSetTopologyContainer* topoCon = dynamic_cast<TetrahedronSetTopologyContainer*>(nodeTopo->getMeshTopology());
+        if (topoCon == nullptr)
+        {
+            ADD_FAILURE() << "Error: TetrahedronSetTopologyContainer not found in 'TT' Node, in scene: " << m_fileName << std::endl;
+            return false;
+        }
+
+
+        // check topology at start
+        EXPECT_EQ(topoCon->getNbTetrahedra(), 19409);
+        EXPECT_EQ(topoCon->getNbTriangles(), 44026);
+        EXPECT_EQ(topoCon->getNbEdges(), 30605);
+        EXPECT_EQ(topoCon->getNbPoints(), 5992);
+
+
+        int nbrTest = 1;
+        int nbrStep = 1000;
+        double diffTimeMs = 0;
+        double timeMin = std::numeric_limits<double>::max();
+        double timeMax = std::numeric_limits<double>::min();
+
+        for (int i = 0; i < nbrTest; ++i)
+        {
+            ctime_t startTime = sofa::helper::system::thread::CTime::getRefTime();
+            for (int i = 0; i < nbrStep; i++)
+            {
+                m_instance.simulate(0.01);
+            }
+
+            ctime_t diffTime = sofa::helper::system::thread::CTime::getRefTime() - startTime;
+            double diffTimed = sofa::helper::system::thread::CTime::toSecond(diffTime);
+
+            if (timeMin > diffTimed)
+                timeMin = diffTimed;
+            if (timeMax < diffTimed)
+                timeMax = diffTimed;
+
+            diffTimeMs += diffTimed;
+            m_instance.simulation->reset(root.get());
+        }
+
+        EXPECT_EQ(topoCon->getNbTetrahedra(), 0);
+        EXPECT_EQ(topoCon->getNbTriangles(), 0);
+        EXPECT_EQ(topoCon->getNbEdges(), 0);
+        EXPECT_EQ(topoCon->getNbPoints(), 2);
+
+        std::cout << "timeMean: " << diffTimeMs/nbrTest << std::endl;
+        std::cout << "timeMin: " << timeMin << std::endl;
+        std::cout << "timeMax: " << timeMax << std::endl;
+
+        //timeMean: 0.944145
+        //timeMin : 0.944145
+        //timeMax : 0.944145
+        // 
+        //timeMean: 0.967373
+        //timeMin : 0.967373
+        //timeMax : 0.967373
+
+        //timeMean: 0.973301
+        //timeMin : 0.973301
+        //timeMax : 0.973301
 
         return true;
     }

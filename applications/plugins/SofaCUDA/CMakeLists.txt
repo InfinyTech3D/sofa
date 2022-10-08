@@ -255,6 +255,7 @@ sofa_find_package(Sofa.Component.Engine.Select REQUIRED)
 sofa_find_package(Sofa.Component.Engine.Transform REQUIRED)
 sofa_find_package(Sofa.Component.MechanicalLoad REQUIRED)
 
+
 sofa_find_package(VolumetricRendering QUIET)
 if(VolumetricRendering_FOUND)
     list(APPEND HEADER_FILES sofa/gpu/cuda/CudaTetrahedralVisualModel.h)

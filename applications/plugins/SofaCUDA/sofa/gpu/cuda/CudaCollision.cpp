@@ -19,15 +19,18 @@
 *                                                                             *
 * Contact information: contact@sofa-framework.org                             *
 ******************************************************************************/
-#include "CudaTypes.h"
-#include "CudaSpringForceField.inl"
-#include "CudaMechanicalObject.inl"
-#include "CudaIdentityMapping.inl"
-#include "CudaContactMapper.h"
-#include "CudaPenalityContactForceField.h"
-#include "CudaSpringForceField.h"
-#include "CudaSphereModel.h"
-#include "CudaPointModel.h"
+#include <sofa/gpu/cuda/CudaTypes.h>
+#include <sofa/gpu/cuda/CudaSpringForceField.inl>
+#include <sofa/gpu/cuda/CudaMechanicalObject.inl>
+#include <sofa/gpu/cuda/CudaIdentityMapping.inl>
+#include <sofa/gpu/cuda/CudaContactMapper.h>
+#include <sofa/gpu/cuda/CudaPenalityContactForceField.h>
+#include <sofa/gpu/cuda/CudaSpringForceField.h>
+
+#include <sofa/gpu/cuda/CudaSphereModel.h>
+#include <sofa/gpu/cuda/CudaTriangleModel.h>
+//#include <sofa/gpu/cuda/CudaLineModel.h>
+#include <sofa/gpu/cuda/CudaPointModel.h>
 
 #include <sofa/gui/component/performer/MouseInteractor.inl>
 #include <sofa/gui/component/performer/ComponentMouseInteraction.inl>
@@ -76,6 +79,17 @@ sofa::component::collision::response::mapper::ContactMapperCreator< sofa::compon
 helper::Creator<ComponentMouseInteraction::ComponentMouseInteractionFactory, TComponentMouseInteraction<CudaVec3fTypes> > ComponentMouseInteractionCudaVec3fClass ("MouseSpringCudaVec3f",true);
 helper::Creator<InteractionPerformer::InteractionPerformerFactory, AttachBodyPerformer <CudaVec3fTypes> >  AttachBodyPerformerCudaVec3fClass("AttachBody",true);
 helper::Creator<InteractionPerformer::InteractionPerformerFactory, FixParticlePerformer<CudaVec3fTypes> >  FixParticlePerformerCudaVec3fClass("FixParticle",true);
+
+
+///////////////////////////////////////////////
+/////   Add CUDA support for Contact    ///////
+///////////////////////////////////////////////
+
+//using namespace core::collision;
+//using namespace sofa::helper;
+//const Creator<Contact::Factory, BarycentricPenalityContact<CudaSphereCollisionModel, CudaSphereCollisionModel, gpu::cuda::CudaVec3Types> > CudaSphereSpherePenalityContactClass("PenalityContactForceField", true);
+//
+//template class SOFA_GPU_CUDA_API BarycentricPenalityContact<CudaSphereCollisionModel, CudaSphereCollisionModel, gpu::cuda::CudaVec3Types>;
 
 #ifdef SOFA_GPU_CUDA_DOUBLE
 helper::Creator<ComponentMouseInteraction::ComponentMouseInteractionFactory, TComponentMouseInteraction<CudaVec3dTypes> > ComponentMouseInteractionCudaVec3dClass ("MouseSpringCudaVec3d",true);
@@ -128,9 +142,27 @@ public:
 };
 
 
-int CudaProximityIntersectionClass = core::RegisterObject("GPGPU Proximity Intersection based on CUDA")
-        .add< CudaProximityIntersection >()
-        ;
+//const int CudaProximityIntersectionClass = core::RegisterObject("CUDA support for MinProximityIntersection. No optimisation.")
+//    .add< CudaProximityIntersection >();
+
+
+//class CudaMinProximityIntersection : public sofa::component::collision::detection::intersection::MinProximityIntersection
+//{
+//public:
+//    SOFA_CLASS(CudaMinProximityIntersection, sofa::component::collision::detection::intersection::MinProximityIntersection);
+//    
+//    virtual void init() override
+//    {
+//        intersectors.add<CudaSphereCollisionModel, CudaSphereCollisionModel, CudaMinProximityIntersection>(this);
+//
+//        MinProximityIntersection::init();
+//    }
+//};
+//
+//int CudaMinProximityIntersectionClass = core::RegisterObject("GPGPU Proximity Intersection based on CUDA")
+//    .add< CudaMinProximityIntersection >();
+
+
 
 sofa::helper::Creator<core::collision::Contact::Factory, RayContact<SphereCollisionModel<gpu::cuda::CudaVec3Types>> > RayCudaSphereContactClass("RayContact",true);
 
