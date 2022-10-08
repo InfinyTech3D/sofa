@@ -50,6 +50,8 @@ BilateralInteractionConstraint<DataTypes>::BilateralInteractionConstraint(Mechan
                                     "a real value specifying the tolerance during the constraint solving. (optional, default=0.0001)") )
     , d_activate( initData(&d_activate, true, "activate", "control constraint activation (true by default)"))
     , keepOrientDiff(initData(&keepOrientDiff,false, "keepOrientationDifference", "keep the initial difference in orientation (only for rigids)"))
+    , l_topology1(initLink("topology1", "link to the first topology container"))
+    , l_topology2(initLink("topology2", "link to the second topology container"))
 {
     this->f_listening.setValue(true);
 }
@@ -83,6 +85,28 @@ template<class DataTypes>
 void BilateralInteractionConstraint<DataTypes>::init()
 {
     unspecializedInit();
+
+    if (sofa::core::topology::BaseMeshTopology* _topology1 = l_topology1.get())
+    {
+        m1.createTopologyHandler(_topology1);
+        m1.addTopologyEventCallBack(core::topology::TopologyChangeType::POINTSREMOVED,
+            [this](const core::topology::TopologyChange* change)
+        {
+            const auto* pointsRemoved = static_cast<const core::topology::PointsRemoved*>(change);
+            removeContact(0, pointsRemoved->getArray());
+        });
+    }
+
+    if (sofa::core::topology::BaseMeshTopology* _topology2 = l_topology2.get())
+    {
+        m2.createTopologyHandler(_topology2);
+        m2.addTopologyEventCallBack(core::topology::TopologyChangeType::POINTSREMOVED,
+            [this](const core::topology::TopologyChange* change)
+        {
+            const auto* pointsRemoved = static_cast<const core::topology::PointsRemoved*>(change);
+            removeContact(1, pointsRemoved->getArray());
+        });
+    }
 }
 
 template<class DataTypes>
@@ -99,12 +123,12 @@ void BilateralInteractionConstraint<DataTypes>::buildConstraintMatrix(const Cons
     if (!d_activate.getValue())
         return;
 
-    unsigned minp = std::min(m1.getValue().size(), m2.getValue().size());
+    auto minp = std::min(m1.getValue().size(), m2.getValue().size());
     if (minp == 0)
         return;
 
-    const type::vector<int> &m1Indices = m1.getValue();
-    const type::vector<int> &m2Indices = m2.getValue();
+    const SubsetIndices& m1Indices = m1.getValue();
+    const SubsetIndices& m2Indices = m2.getValue();
 
     MatrixDeriv &c1 = *c1_d.beginEdit();
     MatrixDeriv &c2 = *c2_d.beginEdit();
@@ -113,7 +137,7 @@ void BilateralInteractionConstraint<DataTypes>::buildConstraintMatrix(const Cons
 
     const VecDeriv& restVector = this->restVector.getValue();
 
-    for (unsigned pid=0; pid<minp; pid++)
+    for (auto pid=0; pid<minp; pid++)
     {
         int tm1 = m1Indices[pid];
         int tm2 = m2Indices[pid];
@@ -155,10 +179,10 @@ void BilateralInteractionConstraint<DataTypes>::getConstraintViolation(const Con
 {
     if (!d_activate.getValue()) return;
 
-    const type::vector<int> &m1Indices = m1.getValue();
-    const type::vector<int> &m2Indices = m2.getValue();
+    const SubsetIndices& m1Indices = m1.getValue();
+    const SubsetIndices& m2Indices = m2.getValue();
 
-    unsigned minp = std::min(m1Indices.size(), m2Indices.size());
+    auto minp = std::min(m1Indices.size(), m2Indices.size());
 
     const VecDeriv& restVector = this->restVector.getValue();
 
@@ -173,7 +197,7 @@ void BilateralInteractionConstraint<DataTypes>::getConstraintViolation(const Con
 
     dfree.resize(minp);
 
-    for (unsigned pid=0; pid<minp; pid++)
+    for (auto pid=0; pid<minp; pid++)
     {
         dfree[pid] = x2[m2Indices[pid]] - x1[m1Indices[pid]];
 
@@ -194,15 +218,15 @@ void BilateralInteractionConstraint<DataTypes>::getVelocityViolation(BaseVector 
                                                                      const DataVecDeriv &d_v1,
                                                                      const DataVecDeriv &d_v2)
 {
-    const type::vector<int> &m1Indices = m1.getValue();
-    const type::vector<int> &m2Indices = m2.getValue();
+    const SubsetIndices& m1Indices = m1.getValue();
+    const SubsetIndices& m2Indices = m2.getValue();
 
     const VecCoord &x1 = d_x1.getValue();
     const VecCoord &x2 = d_x2.getValue();
     const VecCoord &v1 = d_v1.getValue();
     const VecCoord &v2 = d_v2.getValue();
 
-    unsigned minp = std::min(m1Indices.size(), m2Indices.size());
+    auto minp = std::min(m1Indices.size(), m2Indices.size());
     const VecDeriv& restVector = this->restVector.getValue();
 
     auto pos1 = this->getMState1()->readPositions();
@@ -235,10 +259,10 @@ void BilateralInteractionConstraint<DataTypes>::getConstraintResolution(const Co
                                                                         unsigned int& offset)
 {
     SOFA_UNUSED(cParams);
-    unsigned minp=std::min(m1.getValue().size(),m2.getValue().size());
+    auto minp=std::min(m1.getValue().size(),m2.getValue().size());
 
     prevForces.resize(minp);
-    for (unsigned pid=0; pid<minp; pid++)
+        for (auto pid=0; pid<minp; pid++)
     {
         resTab[offset] = new BilateralConstraintResolution3Dof(&prevForces[pid]);
         offset += 3;
@@ -251,8 +275,8 @@ void BilateralInteractionConstraint<DataTypes>::addContact(Deriv /*norm*/, Coord
                                                            Coord /*Pfree*/, Coord /*Qfree*/,
                                                            long /*id*/, PersistentID /*localid*/)
 {
-    WriteAccessor<Data<type::vector<int> > > wm1 = this->m1;
-    WriteAccessor<Data<type::vector<int> > > wm2 = this->m2;
+    WriteAccessor<Data<SubsetIndices> > wm1 = this->m1;
+    WriteAccessor<Data<SubsetIndices> > wm2 = this->m2;
     WriteAccessor<Data<VecDeriv > > wrest = this->restVector;
     wm1.push_back(m1);
     wm2.push_back(m2);
@@ -286,10 +310,49 @@ void BilateralInteractionConstraint<DataTypes>::addContact(Deriv norm, Real cont
 
 
 template<class DataTypes>
+void BilateralInteractionConstraint<DataTypes>::removeContact(int objectId, SubsetIndices indices)
+{
+    SubsetIndices& m1Indices = *this->m1.beginEdit();
+    SubsetIndices& m2Indices = *this->m2.beginEdit();
+    VecDeriv& wrest = *this->restVector.beginEdit();
+
+    int lastState1Id = this->mstate1->getSize() - 1;
+    int lastState2Id = this->mstate2->getSize() - 1;
+
+    const SubsetIndices& cIndices1 = m1.getValue();
+    const SubsetIndices& cIndices2 = m2.getValue();
+
+    for (int i = 0; i < indices.size(); ++i)
+    {
+        const Index elemId = indices[i];
+        Index posId = sofa::InvalidID;
+            
+        if (objectId == 0)
+            posId = indexOfElemConstraint(cIndices1, elemId);
+        else if (objectId == 1)
+            posId = indexOfElemConstraint(cIndices2, elemId);
+
+        if (posId != sofa::InvalidID)
+        {
+            if (wrest.size() == m1Indices.size())
+                wrest.erase(wrest.begin() + posId);
+            
+            m1Indices.erase(m1Indices.begin() + posId);
+            m2Indices.erase(m2Indices.begin() + posId);
+        }
+    }
+    
+    this->m1.endEdit();
+    this->m2.endEdit();
+    this->restVector.endEdit();
+}
+
+
+template<class DataTypes>
 void BilateralInteractionConstraint<DataTypes>::clear(int reserve)
 {
-    WriteAccessor<Data<type::vector<int> > > wm1 = this->m1;
-    WriteAccessor<Data<type::vector<int> > > wm2 = this->m2;
+    WriteAccessor<Data <SubsetIndices > > wm1 = this->m1;
+    WriteAccessor<Data <SubsetIndices > > wm2 = this->m2;
     WriteAccessor<Data<VecDeriv > > wrest = this->restVector;
     wm1.clear();
     wm2.clear();
@@ -301,6 +364,19 @@ void BilateralInteractionConstraint<DataTypes>::clear(int reserve)
         wrest.reserve(reserve);
     }
 }
+
+
+template<class DataTypes>
+Index BilateralInteractionConstraint<DataTypes>::indexOfElemConstraint(const SubsetIndices& cIndices, Index Id)
+{
+    auto it = std::find(cIndices.begin(), cIndices.end(), Id);
+
+    if (it != cIndices.end())
+        return Index(std::distance(cIndices.begin(), it));
+    else    
+        return sofa::InvalidID;
+}
+
 
 template<class DataTypes>
 void BilateralInteractionConstraint<DataTypes>::draw(const core::visual::VisualParams* vparams)
@@ -314,13 +390,13 @@ void BilateralInteractionConstraint<DataTypes>::draw(const core::visual::VisualP
     constexpr sofa::type::RGBAColor colorNotActive = sofa::type::RGBAColor::green();
     std::vector< sofa::type::Vector3 > vertices;
 
-    unsigned minp = std::min(m1.getValue().size(),m2.getValue().size());
+    auto minp = std::min(m1.getValue().size(),m2.getValue().size());
     auto positionsM1 = sofa::helper::getReadAccessor(*this->mstate1->read(ConstVecCoordId::position()));
     auto positionsM2 = sofa::helper::getReadAccessor(*this->mstate2->read(ConstVecCoordId::position()));
     auto indicesM1 = sofa::helper::getReadAccessor(m1);
     auto indicesM2 = sofa::helper::getReadAccessor(m2);
 
-    for (unsigned i=0; i<minp; i++)
+    for (auto i=0; i<minp; i++)
     {
         vertices.push_back(DataTypes::getCPos(positionsM1[indicesM1[i]]));
         vertices.push_back(DataTypes::getCPos(positionsM2[indicesM2[i]]));
