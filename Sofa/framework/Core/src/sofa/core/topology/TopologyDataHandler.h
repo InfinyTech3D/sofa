@@ -82,6 +82,7 @@ public:
 
     /// Function to link DataEngine with Data array from topology
     void linkToTopologyDataArray(sofa::geometry::ElementType elementType) override;
+    void unlinkFromTopologyDataArray(sofa::geometry::ElementType elementType) override;
 
     using TopologyHandler::ApplyTopologyChange;
 

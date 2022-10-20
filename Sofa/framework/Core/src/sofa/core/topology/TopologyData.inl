@@ -43,6 +43,18 @@ TopologyData <TopologyElementType, VecT>::TopologyData(const typename sofa::core
 {
 }
 
+template <typename TopologyElementType, typename VecT>
+TopologyData <TopologyElementType, VecT>::~TopologyData()
+{ 
+    if (m_isTopologyDynamic) {
+        dmsg_info(this->getOwner()) << "TopologyData: " << this->getName() << " removed from dynamic topology: " << this->m_topology->getClassName();
+        this->unlinkFromElementDataArray((TopologyElementType*)nullptr);
+    }
+    else {
+        dmsg_info(this->getOwner()) << "TopologyData: " << this->getName() << " removed from static topology without TopologyHandler.";
+    }
+}
+
 
 template <typename TopologyElementType, typename VecT>
 void TopologyData <TopologyElementType, VecT>::createTopologyHandler(sofa::core::topology::BaseMeshTopology* _topology)
@@ -190,6 +202,43 @@ void TopologyData <TopologyElementType, VecT>::linkToElementDataArray(sofa::core
 { 
     this->setDataSetArraySize(this->m_topology->getNbHexahedra());
     linkToHexahedronDataArray(); 
+}
+
+
+template <typename TopologyElementType, typename VecT>
+void TopologyData <TopologyElementType, VecT>::unlinkFromElementDataArray(sofa::core::topology::BaseMeshTopology::Point*)
+{
+    this->m_topologyHandler->unlinkFromTopologyDataArray(sofa::geometry::ElementType::POINT);
+}
+
+template <typename TopologyElementType, typename VecT>
+void TopologyData <TopologyElementType, VecT>::unlinkFromElementDataArray(sofa::core::topology::BaseMeshTopology::Edge*)
+{
+    this->m_topologyHandler->unlinkFromTopologyDataArray(sofa::geometry::ElementType::EDGE);
+}
+
+template <typename TopologyElementType, typename VecT>
+void TopologyData <TopologyElementType, VecT>::unlinkFromElementDataArray(sofa::core::topology::BaseMeshTopology::Triangle*)
+{
+    this->m_topologyHandler->unlinkFromTopologyDataArray(sofa::geometry::ElementType::TRIANGLE);
+}
+
+template <typename TopologyElementType, typename VecT>
+void TopologyData <TopologyElementType, VecT>::unlinkFromElementDataArray(sofa::core::topology::BaseMeshTopology::Quad*)
+{
+    this->m_topologyHandler->unlinkFromTopologyDataArray(sofa::geometry::ElementType::QUAD);
+}
+
+template <typename TopologyElementType, typename VecT>
+void TopologyData <TopologyElementType, VecT>::unlinkFromElementDataArray(sofa::core::topology::BaseMeshTopology::Tetrahedron*)
+{
+    this->m_topologyHandler->unlinkFromTopologyDataArray(sofa::geometry::ElementType::TETRAHEDRON);
+}
+
+template <typename TopologyElementType, typename VecT>
+void TopologyData <TopologyElementType, VecT>::unlinkFromElementDataArray(sofa::core::topology::BaseMeshTopology::Hexahedron*)
+{
+    this->m_topologyHandler->unlinkFromTopologyDataArray(sofa::geometry::ElementType::HEXAHEDRON);
 }
 
 

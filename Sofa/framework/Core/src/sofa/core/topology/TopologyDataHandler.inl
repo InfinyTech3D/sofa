@@ -92,6 +92,24 @@ void TopologyDataHandler<TopologyElementType, VecT>::linkToTopologyDataArray(sof
 }
 
 
+template <typename TopologyElementType, typename VecT>
+void TopologyDataHandler<TopologyElementType, VecT>::unlinkFromTopologyDataArray(sofa::geometry::ElementType elementType)
+{
+    if (!m_isRegistered) // Will be false if topology has already been deleted
+        return;
+
+    if (m_topology->unlinkTopologyHandlerToData(this, elementType))
+    {
+        m_topology->removeTopologyHandler(this, elementType);
+    }
+    else
+    {
+        msg_error(m_topologyData->getOwner()) << "Owner topology is not able to unlink with Data Array, Data '" << m_data_name << "' won't be unlinked.";
+        return;
+    }
+}
+
+
 /// Apply swap between indices elements.
 template <typename TopologyElementType, typename VecT>
 void TopologyDataHandler<TopologyElementType,  VecT>::ApplyTopologyChange(const EIndicesSwap* event)
