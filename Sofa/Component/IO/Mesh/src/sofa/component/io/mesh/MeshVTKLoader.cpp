@@ -340,6 +340,23 @@ bool MeshVTKLoader::setInputsMesh()
     else if (reader->inputCells && reader->inputCellTypes)
     {
         const int* inFP = (const int*) reader->inputCells->getData();
+        //std::cout 
+        //    << "inFP: " 
+        //    << inFP[0] << " " << inFP[1] << " " << inFP[2]
+        //    << " "
+        //    << inFP[3] << " " << inFP[4] << " " << inFP[5]
+        //    << std::endl
+        //    << "inFP: " 
+        //    << inFP[6] << " " << inFP[7] << " " << inFP[8]
+        //    << " "
+        //    << inFP[9] << " " << inFP[10] << " " << inFP[11]
+        //    << std::endl
+        //    << "inFP: " 
+        //    << inFP[12] << " " << inFP[13] << " " << inFP[14]
+        //    << " "
+        //    << inFP[15] << " " << inFP[16] << " " << inFP[17]
+        //    << std::endl;
+
         //offsets are not used if we have parsed with the legacy method
         const int* offsets = (reader->inputCellOffsets == nullptr) ? nullptr : (const int*) reader->inputCellOffsets->getData();
 
@@ -361,6 +378,10 @@ bool MeshVTKLoader::setInputsMesh()
             {
                 i = (c == 0) ? 0 : offsets[c - 1];
                 nv = inFP[i];
+                //std::cout << "inFP: " 
+                //    << inFP[i + 0] << " " << inFP[i + 1] << " " << inFP[i + 2]
+                //    << std::endl;
+                //std::cout << "i : " << i << std::endl;
             }
             else
             {
@@ -417,6 +438,8 @@ bool MeshVTKLoader::setInputsMesh()
                 addQuad(my_quads.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + 1]), unsigned(inFP[i + 2]), unsigned(inFP[i + 3]));
                 break;
             case 10: // TETRA
+                //std::cout << inFP[i + 0] << " " << inFP[i + 1] << " " << inFP[i + 2] << " "
+                //          << inFP[i + 3] << std::endl;
                 addTetrahedron(my_tetrahedra.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + 1]), unsigned(inFP[i + 2]), unsigned(inFP[i + 3]));
                 break;
             case 11: // VOXEL
@@ -693,7 +716,7 @@ bool LegacyVTKReader::readFile(const char* filename)
             {
                 return false;
             }
-            numberOfCells = n;
+                numberOfCells = n;
         }
         else if (kw == "LINES")
         {
@@ -1184,13 +1207,19 @@ bool XMLVTKReader::loadUnstructuredGrid(tinyxml2::XMLHandle datasetFormatHandle)
                     if (currentDataArrayName.compare("connectivity") == 0)
                     {
                         //number of elements in values is not known ; have to guess it
-                        inputCells = loadDataArray(dataArrayElement);
+                        inputCells = loadDataArray(dataArrayElement, 0, "Int32");
                         checkError(inputCells);
                     }
                     ///DA - offsets
                     if (currentDataArrayName.compare("offsets") == 0)
                     {
-                        inputCellOffsets = loadDataArray(dataArrayElement, numberOfCells - 1);
+                        inputCellOffsets = loadDataArray(dataArrayElement, numberOfCells, "Int32");// - 1);
+                        //const int* offsets = (inputCellOffsets == nullptr) ? nullptr : (const int*) inputCellOffsets->getData();
+                        //std::cout << "offsets: " << std::endl
+                        //    << offsets[0] << std::endl
+                        //    << offsets[1] << std::endl 
+                        //    << offsets[2]
+                        //    << std::endl;
                         checkError(inputCellOffsets);
                     }
                     ///DA - types
