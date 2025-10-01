@@ -58,10 +58,10 @@ class BaseVTKReader : public BaseObject
     class BaseVTKDataIO : public BaseObject
     {
        public:
-        string name;
-        int dataSize;
-        int nestedDataSize;
-        BaseVTKDataIO() : dataSize(0), nestedDataSize(1) {}
+        string m_name;
+        int m_dataSize;
+        int m_nestedDataSize;
+        BaseVTKDataIO() : m_dataSize(0), m_nestedDataSize(1) {}
         ~BaseVTKDataIO() override {}
         virtual void resize(int n) = 0;
         virtual bool read(istream& f, int n, int binary) = 0;
@@ -78,13 +78,13 @@ class BaseVTKReader : public BaseObject
     class VTKDataIO : public BaseVTKDataIO
     {
        public:
-        T* data;
-        VTKDataIO() : data(nullptr) {}
+        T* m_data;
+        VTKDataIO() : m_data(nullptr) {}
         ~VTKDataIO() override
         {
-            if (data)
+            if (m_data)
             {
-                delete[] data;
+                delete[] m_data;
             }
         }
         const void* getData() override;
@@ -101,17 +101,17 @@ class BaseVTKReader : public BaseObject
     BaseVTKDataIO* newVTKDataIO(const string& typestr);
     BaseVTKDataIO* newVTKDataIO(const string& typestr, int num);
 
-    BaseVTKDataIO* inputPoints;
-    BaseVTKDataIO* inputNormals;
-    BaseVTKDataIO* inputPolygons;
-    BaseVTKDataIO* inputCells;
-    BaseVTKDataIO* inputCellOffsets;
-    BaseVTKDataIO* inputCellTypes;
-    type::vector<BaseVTKDataIO*> inputPointDataVector;
-    type::vector<BaseVTKDataIO*> inputCellDataVector;
-    bool isLittleEndian;
+    BaseVTKDataIO* m_inputPoints;
+    BaseVTKDataIO* m_inputNormals;
+    BaseVTKDataIO* m_inputPolygons;
+    BaseVTKDataIO* m_inputCells;
+    BaseVTKDataIO* m_inputCellOffsets;
+    BaseVTKDataIO* m_inputCellTypes;
+    type::vector<BaseVTKDataIO*> m_inputPointDataVector;
+    type::vector<BaseVTKDataIO*> m_inputCellDataVector;
+    bool m_isLittleEndian;
 
-    int numberOfPoints, numberOfCells, numberOfLines;
+    int m_numberOfPoints, m_numberOfCells, m_numberOfLines;
 
     BaseVTKReader();
 

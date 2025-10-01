@@ -34,19 +34,19 @@ using std::istringstream;
 template <class T>
 const void* BaseVTKReader::VTKDataIO<T>::getData()
 {
-    return data;
+    return m_data;
 }
 
 template <class T>
 void BaseVTKReader::VTKDataIO<T>::resize(int n)
 {
-    if (dataSize != n)
+    if (m_dataSize != n)
     {
-        if (data) delete[] data;
-        data = new T[n];
+        if (m_data) delete[] m_data;
+        m_data = new T[n];
     }
 
-    dataSize = n;
+    m_dataSize = n;
 }
 
 template <class T>
@@ -75,7 +75,7 @@ T BaseVTKReader::VTKDataIO<T>::swapT(T t, int nestedDataSize)
 template <class T>
 void BaseVTKReader::VTKDataIO<T>::swap()
 {
-    for (int i = 0; i < dataSize; ++i) data[i] = swapT(data[i], nestedDataSize);
+    for (int i = 0; i < m_dataSize; ++i) m_data[i] = swapT(m_data[i], m_nestedDataSize);
 }
 
 template <class T>
@@ -118,7 +118,7 @@ bool BaseVTKReader::VTKDataIO<T>::read(istream& in, int n, int binary)
     resize(n);
     if (binary)
     {
-        in.read((char*)data, n * sizeof(T));
+        in.read((char*)m_data, n * sizeof(T));
         if (in.eof() || in.bad())
         {
             resize(0);
@@ -128,7 +128,7 @@ bool BaseVTKReader::VTKDataIO<T>::read(istream& in, int n, int binary)
         {
             for (int i = 0; i < n; ++i)
             {
-                data[i] = swapT(data[i], nestedDataSize);
+                m_data[i] = swapT(m_data[i], m_nestedDataSize);
             }
         }
     }
@@ -136,11 +136,11 @@ bool BaseVTKReader::VTKDataIO<T>::read(istream& in, int n, int binary)
     {
         int i = 0;
         string line;
-        while (i < dataSize && !in.eof() && !in.bad())
+        while (i < m_dataSize && !in.eof() && !in.bad())
         {
             std::getline(in, line);
             istringstream ln(line);
-            while (i < n && ln >> data[i]) ++i;
+            while (i < n && ln >> m_data[i]) ++i;
         }
         if (i < n)
         {
@@ -154,10 +154,10 @@ bool BaseVTKReader::VTKDataIO<T>::read(istream& in, int n, int binary)
 template <class T>
 bool BaseVTKReader::VTKDataIO<T>::write(ofstream& out, int n, int groups, int binary)
 {
-    if (n > dataSize && !data) return false;
+    if (n > m_dataSize && !m_data) return false;
     if (binary)
     {
-        out.write((char*)data, n * sizeof(T));
+        out.write((char*)m_data, n * sizeof(T));
     }
     else
     {
@@ -165,7 +165,7 @@ bool BaseVTKReader::VTKDataIO<T>::write(ofstream& out, int n, int groups, int bi
         for (int i = 0; i < n; ++i)
         {
             if ((i % groups) > 0) out << ' ';
-            out << data[i];
+            out << m_data[i];
             if ((i % groups) == groups - 1) out << '\n';
         }
     }
@@ -176,11 +176,11 @@ bool BaseVTKReader::VTKDataIO<T>::write(ofstream& out, int n, int groups, int bi
 template <class T>
 BaseData* BaseVTKReader::VTKDataIO<T>::createSofaData()
 {
-    Data<type::vector<T> >* sdata = new Data<type::vector<T> >(name.c_str(), true, false);
-    sdata->setName(name);
+    Data<type::vector<T> >* sdata = new Data<type::vector<T> >(m_name.c_str(), true, false);
+    sdata->setName(m_name);
     type::vector<T>& sofaData = *sdata->beginEdit();
 
-    for (int i = 0; i < dataSize; i++) sofaData.push_back(data[i]);
+    for (int i = 0; i < m_dataSize; i++) sofaData.push_back(m_data[i]);
     sdata->endEdit();
 
     return sdata;

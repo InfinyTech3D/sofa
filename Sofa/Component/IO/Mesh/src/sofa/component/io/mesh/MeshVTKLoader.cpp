@@ -207,7 +207,7 @@ bool MeshVTKLoader::doLoad()
 bool MeshVTKLoader::setInputsMesh()
 {
     auto my_positions = getWriteOnlyAccessor(d_positions);
-    if (reader->inputPoints)
+    if (reader->m_inputPoints)
     {
         BaseVTKReader::VTKDataIO<double>* vtkpd =
             dynamic_cast<BaseVTKReader::VTKDataIO<double>*>(reader->m_inputPoints);
@@ -215,9 +215,9 @@ bool MeshVTKLoader::setInputsMesh()
             dynamic_cast<BaseVTKReader::VTKDataIO<float>*>(reader->m_inputPoints);
         if (vtkpd)
         {
-            const double* inPoints = (vtkpd->data);
+            const double* inPoints = (vtkpd->m_data);
             if (inPoints)
-                for (int i = 0; i < vtkpd->dataSize; i += 3)
+                for (int i = 0; i < vtkpd->m_dataSize; i += 3)
                 {
                     my_positions.push_back(Vec3d(double(inPoints[i + 0]), double(inPoints[i + 1]),
                                                  double(inPoints[i + 2])));
@@ -229,9 +229,9 @@ bool MeshVTKLoader::setInputsMesh()
         }
         else if (vtkpf)
         {
-            const float* inPoints = (vtkpf->data);
+            const float* inPoints = (vtkpf->m_data);
             if (inPoints)
-                for (int i = 0; i < vtkpf->dataSize; i += 3)
+                for (int i = 0; i < vtkpf->m_dataSize; i += 3)
                 {
                     my_positions.push_back(
                         Vec3f(inPoints[i + 0], inPoints[i + 1], inPoints[i + 2]));
@@ -253,18 +253,18 @@ bool MeshVTKLoader::setInputsMesh()
     }
 
     auto my_normals = getWriteOnlyAccessor(d_normals);
-    if (reader->inputNormals)
+    if (reader->m_inputNormals)
     {
         BaseVTKReader::VTKDataIO<double>* vtkpd =
-            dynamic_cast<BaseVTKReader::VTKDataIO<double>*>(reader->inputNormals);
+            dynamic_cast<BaseVTKReader::VTKDataIO<double>*>(reader->m_inputNormals);
         BaseVTKReader::VTKDataIO<float>* vtkpf =
-            dynamic_cast<BaseVTKReader::VTKDataIO<float>*>(reader->inputNormals);
+            dynamic_cast<BaseVTKReader::VTKDataIO<float>*>(reader->m_inputNormals);
 
         if (vtkpd)
         {
-            const double* inNormals = (vtkpd->data);
+            const double* inNormals = (vtkpd->m_data);
             if (inNormals)
-                for (int i = 0; i < vtkpd->dataSize; i += 3)
+                for (int i = 0; i < vtkpd->m_dataSize; i += 3)
                 {
                     my_normals.push_back(Vec3(double(inNormals[i + 0]), double(inNormals[i + 1]),
                                               double(inNormals[i + 2])));
@@ -276,9 +276,9 @@ bool MeshVTKLoader::setInputsMesh()
         }
         else if (vtkpf)
         {
-            const float* inNormals = (vtkpf->data);
+            const float* inNormals = (vtkpf->m_data);
             if (inNormals)
-                for (int i = 0; i < vtkpf->dataSize; i += 3)
+                for (int i = 0; i < vtkpf->m_dataSize; i += 3)
                 {
                     my_normals.push_back(Vec3 (inNormals[i + 0], inNormals[i + 1], inNormals[i + 2]));
                 }
@@ -304,20 +304,20 @@ bool MeshVTKLoader::setInputsMesh()
     auto my_highOrderEdgePositions = getWriteOnlyAccessor(d_highOrderEdgePositions);
 
     int errorcount = 0;
-    if (reader->inputPolygons)
+    if (reader->m_inputPolygons)
     {
-        const int* inFP = (const int*)reader->inputPolygons->getData();
+        const int* inFP = (const int*)reader->m_inputPolygons->getData();
         int poly = 0;
-        for (int i = 0; i < reader->inputPolygons->dataSize;)
+        for (int i = 0; i < reader->m_inputPolygons->m_dataSize;)
         {
             int nv = inFP[i];
             ++i;
             bool valid = true;
-            if (reader->inputPoints)
+            if (reader->m_inputPoints)
             {
                 for (int j = 0; j < nv; ++j)
                 {
-                    if (unsigned(inFP[i + j]) >= unsigned(reader->inputPoints->dataSize / 3))
+                    if (unsigned(inFP[i + j]) >= unsigned(reader->m_inputPoints->m_dataSize / 3))
                     {
                         /// More user friendly error message to avoid flooding him
                         /// in case of severely broken file.
@@ -361,9 +361,9 @@ bool MeshVTKLoader::setInputsMesh()
             ++poly;
         }
     }
-    else if (reader->inputCells && reader->inputCellTypes)
+    else if (reader->m_inputCells && reader->m_inputCellTypes)
     {
-        const int* inFP = (const int*)reader->inputCells->getData();
+        const int* inFP = (const int*)reader->m_inputCells->getData();
         // std::cout
         //     << "inFP: "
         //     << inFP[0] << " " << inFP[1] << " " << inFP[2]
@@ -382,11 +382,11 @@ bool MeshVTKLoader::setInputsMesh()
         //     << std::endl;
 
         // offsets are not used if we have parsed with the legacy method
-        const int* offsets = (reader->inputCellOffsets == nullptr)
+        const int* offsets = (reader->m_inputCellOffsets == nullptr)
                                  ? nullptr
-                                 : (const int*)reader->inputCellOffsets->getData();
+                                 : (const int*)reader->m_inputCellOffsets->getData();
 
-        const int* dataT = (int*)(reader->inputCellTypes->getData());
+        const int* dataT = (int*)(reader->m_inputCellTypes->getData());
 
         type::vector<int> numSubPolyLines;
 
@@ -395,7 +395,7 @@ bool MeshVTKLoader::setInputsMesh()
                                                                 {0, 3}, {1, 3}, {2, 3}};
         std::set<topology::Edge> edgeSet;
         size_t j;
-        int nbf = reader->numberOfCells;
+        int nbf = reader->m_numberOfCells;
         int i = 0;
         for (int c = 0; c < nbf; ++c)
         {
@@ -563,12 +563,12 @@ bool MeshVTKLoader::setInputsMesh()
 
         if (numSubPolyLines.size() > 0)
         {
-            size_t sz = reader->inputCellDataVector.size();
-            reader->inputCellDataVector.resize(sz + 1);
-            reader->inputCellDataVector[sz] = reader->newVTKDataIO("int");
+            size_t sz = reader->m_inputCellDataVector.size();
+            reader->m_inputCellDataVector.resize(sz + 1);
+            reader->m_inputCellDataVector[sz] = reader->newVTKDataIO("int");
 
             BaseVTKReader::VTKDataIO<int>* cellData =
-                dynamic_cast<BaseVTKReader::VTKDataIO<int>*>(reader->inputCellDataVector[sz]);
+                dynamic_cast<BaseVTKReader::VTKDataIO<int>*>(reader->m_inputCellDataVector[sz]);
 
             if (cellData == nullptr)
             {
@@ -579,31 +579,31 @@ bool MeshVTKLoader::setInputsMesh()
 
             for (size_t ii = 0; ii < numSubPolyLines.size(); ii++)
             {
-                cellData->data[ii] = numSubPolyLines[ii];
+                cellData->m_data[ii] = numSubPolyLines[ii];
             }
 
-            cellData->name = "PolyLineSubEdges";
+            cellData->m_name = "PolyLineSubEdges";
         }
     }
-    if (reader->inputPoints)
+    if (reader->m_inputPoints)
     {
-        delete reader->inputPoints;
+        delete reader->m_inputPoints;
     }
-    if (reader->inputNormals)
+    if (reader->m_inputNormals)
     {
-        delete reader->inputNormals;
+        delete reader->m_inputNormals;
     }
-    if (reader->inputPolygons)
+    if (reader->m_inputPolygons)
     {
-        delete reader->inputPolygons;
+        delete reader->m_inputPolygons;
     }
-    if (reader->inputCells)
+    if (reader->m_inputCells)
     {
-        delete reader->inputCells;
+        delete reader->m_inputCells;
     }
-    if (reader->inputCellTypes)
+    if (reader->m_inputCellTypes)
     {
-        delete reader->inputCellTypes;
+        delete reader->m_inputCellTypes;
     }
 
     return true;
@@ -612,9 +612,9 @@ bool MeshVTKLoader::setInputsMesh()
 bool MeshVTKLoader::setInputsData()
 {
     /// Point Data
-    for (const auto& inputPointData : reader->inputPointDataVector)
+    for (const auto& inputPointData : reader->m_inputPointDataVector)
     {
-        const char* dataname = inputPointData->name.c_str();
+        const char* dataname = inputPointData->m_name.c_str();
 
         BaseData* basedata = inputPointData->createSofaData();
         this->addData(basedata, dataname);
@@ -622,9 +622,9 @@ bool MeshVTKLoader::setInputsData()
     }
 
     /// Cell Data
-    for (const auto& inputCellData : reader->inputCellDataVector)
+    for (const auto& inputCellData : reader->m_inputCellDataVector)
     {
-        const char* dataname = inputCellData->name.c_str();
+        const char* dataname = inputCellData->m_name.c_str();
         BaseData* basedata = inputCellData->createSofaData();
         this->addData(basedata, dataname);
         addOutputsToCallback("filename", {basedata});
@@ -702,10 +702,10 @@ bool LegacyVTKReader::readFile(const char* filename)
                    : (binary == 1) ? "Binary"
                                    : "Swapped Binary")
                << " VTK File (version " << version << "): " << header;
-    VTKDataIO<int>* inputPolygonsInt = nullptr;
-    VTKDataIO<int>* inputCellsInt = nullptr;
-    VTKDataIO<int>* inputCellTypesInt = nullptr;
-    inputCellOffsets = nullptr;
+    VTKDataIO<int>* m_inputPolygonsInt = nullptr;
+    VTKDataIO<int>* m_inputCellsInt = nullptr;
+    VTKDataIO<int>* m_inputCellTypesInt = nullptr;
+    m_inputCellOffsets = nullptr;
 
     while (!inVTKFile.eof())
     {
@@ -723,12 +723,12 @@ bool LegacyVTKReader::readFile(const char* filename)
             string typestr;
             ln >> n >> typestr;
             msg_info() << "Found " << n << " " << typestr << " points";
-            inputPoints = newVTKDataIO(typestr);
-            if (inputPoints == nullptr)
+            m_inputPoints = newVTKDataIO(typestr);
+            if (m_inputPoints == nullptr)
             {
                 return false;
             }
-            if (!inputPoints->read(inVTKFile, 3 * n, binary))
+            if (!m_inputPoints->read(inVTKFile, 3 * n, binary))
             {
                 return false;
             }
@@ -739,9 +739,9 @@ bool LegacyVTKReader::readFile(const char* filename)
             int n, ni;
             ln >> n >> ni;
             msg_info() << n << " polygons ( " << (ni - 3 * n) << " triangles )";
-            inputPolygons = new VTKDataIO<int>;
-            inputPolygonsInt = dynamic_cast<VTKDataIO<int>*>(inputPolygons);
-            if (!inputPolygons->read(inVTKFile, ni, binary))
+            m_inputPolygons = new VTKDataIO<int>;
+            m_inputPolygonsInt = dynamic_cast<VTKDataIO<int>*>(m_inputPolygons);
+            if (!m_inputPolygons->read(inVTKFile, ni, binary))
             {
                 return false;
             }
@@ -751,42 +751,42 @@ bool LegacyVTKReader::readFile(const char* filename)
             int n, ni;
             ln >> n >> ni;
             msg_info() << "Found " << n << " cells";
-            inputCells = new VTKDataIO<int>;
-            inputCellsInt = dynamic_cast<VTKDataIO<int>*>(inputCells);
-            if (!inputCells->read(inVTKFile, ni, binary))
+            m_inputCells = new VTKDataIO<int>;
+            m_inputCellsInt = dynamic_cast<VTKDataIO<int>*>(m_inputCells);
+            if (!m_inputCells->read(inVTKFile, ni, binary))
             {
                 return false;
             }
-            numberOfCells = n;
+            m_numberOfCells = n;
         }
         else if (kw == "LINES")
         {
             int n, ni;
             ln >> n >> ni;
             msg_info() << "Found " << n << " lines";
-            inputCells = new VTKDataIO<int>;
-            inputCellsInt = dynamic_cast<VTKDataIO<int>*>(inputCellsInt);
-            if (!inputCells->read(inVTKFile, ni, binary))
+            m_inputCells = new VTKDataIO<int>;
+            m_inputCellsInt = dynamic_cast<VTKDataIO<int>*>(m_inputCellsInt);
+            if (!m_inputCells->read(inVTKFile, ni, binary))
             {
                 return false;
             }
-            numberOfCells = n;
+            m_numberOfCells = n;
 
-            inputCellTypes = new VTKDataIO<int>;
-            inputCellTypesInt = dynamic_cast<VTKDataIO<int>*>(inputCellTypes);
-            inputCellTypesInt->resize(n);
+            m_inputCellTypes = new VTKDataIO<int>;
+            m_inputCellTypesInt = dynamic_cast<VTKDataIO<int>*>(m_inputCellTypes);
+            m_inputCellTypesInt->resize(n);
             for (int i = 0; i < n; i++)
             {
-                inputCellTypesInt->data[i] = 4;
+                m_inputCellTypesInt->m_data[i] = 4;
             }
         }
         else if (kw == "CELL_TYPES")
         {
             int n;
             ln >> n;
-            inputCellTypes = new VTKDataIO<int>;
-            inputCellTypesInt = dynamic_cast<VTKDataIO<int>*>(inputCellTypes);
-            if (!inputCellTypes->read(inVTKFile, n, binary))
+            m_inputCellTypes = new VTKDataIO<int>;
+            m_inputCellTypesInt = dynamic_cast<VTKDataIO<int>*>(m_inputCellTypes);
+            if (!m_inputCellTypes->read(inVTKFile, n, binary))
             {
                 return false;
             }
@@ -794,8 +794,8 @@ bool LegacyVTKReader::readFile(const char* filename)
         else if (kw == "CELL_DATA" || kw == "POINT_DATA")
         {
             const bool cellData = (kw == "CELL_DATA");
-            type::vector<BaseVTKDataIO*>& inputDataVector = cellData ? inputCellDataVector
-                                                                     : inputPointDataVector;
+            type::vector<BaseVTKDataIO*>& m_inputDataVector = cellData ? m_inputCellDataVector
+                                                                     : m_inputPointDataVector;
             int nb_ele;
             ln >> nb_ele;
             while (!inVTKFile.eof())
@@ -845,7 +845,7 @@ bool LegacyVTKReader::readFile(const char* filename)
                         }
                         if (data->read(inVTKFile, nb_ele, binary))
                         {
-                            inputDataVector.push_back(data);
+                            m_inputDataVector.push_back(data);
                             data->name = dataName;
                             if (kw == "CELL_DATA")
                             {
@@ -868,12 +868,12 @@ bool LegacyVTKReader::readFile(const char* filename)
                     lnData >> dataName >> dataType;
                     msg_info() << "Reading normals named \"" << dataName << "\" of type \""
                                << dataType << "\".";
-                    inputNormals = newVTKDataIO(dataType);
-                    if (inputNormals == nullptr)
+                    m_inputNormals = newVTKDataIO(dataType);
+                    if (m_inputNormals == nullptr)
                     {
                         return false;
                     }
-                    if (!inputNormals->read(inVTKFile, 3 * nb_ele, binary))
+                    if (!m_inputNormals->read(inVTKFile, 3 * nb_ele, binary))
                     {
                         return false;
                     }
@@ -887,7 +887,7 @@ bool LegacyVTKReader::readFile(const char* filename)
                     {
                         if (data->read(inVTKFile, nb_ele, binary))
                         {
-                            inputDataVector.push_back(data);
+                            m_inputDataVector.push_back(data);
                             data->name = dataName;
                             if (kw == "CELL_DATA")
                             {
@@ -930,7 +930,7 @@ bool LegacyVTKReader::readFile(const char* filename)
                         {
                             if (data->read(inVTKFile, nbData, binary))
                             {
-                                inputDataVector.push_back(data);
+                                m_inputDataVector.push_back(data);
                                 data->name = dataName;
                             }
                             else
@@ -981,13 +981,13 @@ bool LegacyVTKReader::readFile(const char* filename)
             msg_warning() << "Unknown keyword " << kw;
         }
 
-        msg_info() << "LNG: " << inputCellDataVector.size();
+        msg_info() << "LNG: " << m_inputCellDataVector.size();
 
-        if (inputPoints && inputPolygons)
+        if (m_inputPoints && m_inputPolygons)
         {
             break;  // already found the mesh description, skip the rest
         }
-        if (inputPoints && inputCells && inputCellTypes && inputCellDataVector.size() > 0)
+        if (m_inputPoints && m_inputCells && m_inputCellTypes && m_inputCellDataVector.size() > 0)
         {
             break;  // already found the mesh description, skip the rest
         }
@@ -997,18 +997,18 @@ bool LegacyVTKReader::readFile(const char* filename)
     {
         // detect swapped data
         bool swapped = false;
-        if (inputPolygons)
+        if (m_inputPolygons)
         {
-            if ((unsigned)inputPolygonsInt->data[0] >
-                (unsigned)inputPolygonsInt->swapT(inputPolygonsInt->data[0], 1))
+            if ((unsigned)m_inputPolygonsInt->m_data[0] >
+                (unsigned)m_inputPolygonsInt->swapT(m_inputPolygonsInt->m_data[0], 1))
             {
                 swapped = true;
             }
         }
-        else if (inputCells && inputCellTypes)
+        else if (m_inputCells && m_inputCellTypes)
         {
-            if ((unsigned)inputCellTypesInt->data[0] >
-                (unsigned)inputCellTypesInt->swapT(inputCellTypesInt->data[0], 1))
+            if ((unsigned)m_inputCellTypesInt->m_data[0] >
+                (unsigned)m_inputCellTypesInt->swapT(m_inputCellTypesInt->m_data[0], 1))
             {
                 swapped = true;
             }
@@ -1016,21 +1016,21 @@ bool LegacyVTKReader::readFile(const char* filename)
         if (swapped)
         {
             msg_info() << "Binary data is byte-swapped.";
-            if (inputPoints)
+            if (m_inputPoints)
             {
-                inputPoints->swap();
+                m_inputPoints->swap();
             }
-            if (inputPolygons)
+            if (m_inputPolygons)
             {
-                inputPolygons->swap();
+                m_inputPolygons->swap();
             }
-            if (inputCells)
+            if (m_inputCells)
             {
-                inputCells->swap();
+                m_inputCells->swap();
             }
-            if (inputCellTypes)
+            if (m_inputCellTypes)
             {
-                inputCellTypes->swap();
+                m_inputCellTypes->swap();
             }
         }
     }
@@ -1056,7 +1056,7 @@ bool XMLVTKReader::readFile(const char* filename)
 
     // Endianness
     const char* endiannessStrTemp = pElem->Attribute("byte_order");
-    isLittleEndian = (string(endiannessStrTemp).compare("LittleEndian") == 0);
+    m_isLittleEndian = (string(endiannessStrTemp).compare("LittleEndian") == 0);
 
     // read VTK data format type
     const char* datasetFormatStrTemp = pElem->Attribute("type");
@@ -1167,7 +1167,7 @@ BaseVTKReader::BaseVTKDataIO* XMLVTKReader::loadDataArray(tinyxml2::XMLElement* 
     {
         binary = 0;
     }
-    else if (isLittleEndian)
+    else if (m_isLittleEndian)
     {
         binary = 1;
     }
@@ -1225,8 +1225,8 @@ bool XMLVTKReader::loadUnstructuredGrid(tinyxml2::XMLHandle datasetFormatHandle)
     checkError(pieceElem);
     for (; pieceElem; pieceElem = pieceElem->NextSiblingElement())
     {
-        pieceElem->QueryIntAttribute("NumberOfPoints", &numberOfPoints);
-        pieceElem->QueryIntAttribute("NumberOfCells", &numberOfCells);
+        pieceElem->QueryIntAttribute("NumberOfPoints", &m_numberOfPoints);
+        pieceElem->QueryIntAttribute("NumberOfCells", &m_numberOfCells);
 
         tinyxml2::XMLNode* dataArrayNode;
         tinyxml2::XMLElement* dataArrayElement;
@@ -1243,8 +1243,8 @@ bool XMLVTKReader::loadUnstructuredGrid(tinyxml2::XMLHandle datasetFormatHandle)
                 checkError(dataArrayNode);
                 dataArrayElement = dataArrayNode->ToElement();
                 checkError(dataArrayElement);
-                // Force the points coordinates to be stocked as double
-                m_inputPoints = loadDataArray(dataArrayElement, numberOfPoints, "Float64");
+                //Force the points coordinates to be stocked as double
+                m_inputPoints = loadDataArray(dataArrayElement, m_numberOfPoints, "Float64");
                 checkError(m_inputPoints);
             }
 
@@ -1262,27 +1262,27 @@ bool XMLVTKReader::loadUnstructuredGrid(tinyxml2::XMLHandle datasetFormatHandle)
                     if (currentDataArrayName.compare("connectivity") == 0)
                     {
                         // number of elements in values is not known ; have to guess it
-                        inputCells = loadDataArray(dataArrayElement, 0, "Int32");
-                        checkError(inputCells);
+                        m_inputCells = loadDataArray(dataArrayElement, 0, "Int32");
+                        checkError(m_inputCells);
                     }
                     /// DA - offsets
                     if (currentDataArrayName.compare("offsets") == 0)
                     {
-                        inputCellOffsets =
-                            loadDataArray(dataArrayElement, numberOfCells, "Int32");  // - 1);
-                        // const int* offsets = (inputCellOffsets == nullptr) ? nullptr : (const
-                        // int*) inputCellOffsets->getData(); std::cout << "offsets: " << std::endl
+                        m_inputCellOffsets =
+                            loadDataArray(dataArrayElement, m_numberOfCells, "Int32");  // - 1);
+                        // const int* offsets = (m_inputCellOffsets == nullptr) ? nullptr : (const
+                        // int*) m_inputCellOffsets->getData(); std::cout << "offsets: " << std::endl
                         //     << offsets[0] << std::endl
                         //     << offsets[1] << std::endl
                         //     << offsets[2]
                         //     << std::endl;
-                        checkError(inputCellOffsets);
+                        checkError(m_inputCellOffsets);
                     }
                     /// DA - types
                     if (currentDataArrayName.compare("types") == 0)
                     {
-                        inputCellTypes = loadDataArray(dataArrayElement, numberOfCells, "Int32");
-                        checkError(inputCellTypes);
+                        m_inputCellTypes = loadDataArray(dataArrayElement, m_numberOfCells, "Int32");
+                        checkError(m_inputCellTypes);
                     }
                 }
             }
@@ -1298,10 +1298,10 @@ bool XMLVTKReader::loadUnstructuredGrid(tinyxml2::XMLHandle datasetFormatHandle)
 
                     const string currentDataArrayName = string(dataArrayElement->Attribute("Name"));
 
-                    BaseVTKDataIO* pointdata = loadDataArray(dataArrayElement, numberOfPoints);
+                    BaseVTKDataIO* pointdata = loadDataArray(dataArrayElement, m_numberOfPoints);
                     checkError(pointdata);
                     pointdata->name = currentDataArrayName;
-                    inputPointDataVector.push_back(pointdata);
+                    m_inputPointDataVector.push_back(pointdata);
                 }
             }
             if (currentNodeName.compare("CellData") == 0)
@@ -1313,10 +1313,10 @@ bool XMLVTKReader::loadUnstructuredGrid(tinyxml2::XMLHandle datasetFormatHandle)
                     dataArrayElement = dataArrayNode->ToElement();
                     checkError(dataArrayElement);
                     const string currentDataArrayName = string(dataArrayElement->Attribute("Name"));
-                    BaseVTKDataIO* celldata = loadDataArray(dataArrayElement, numberOfCells);
+                    BaseVTKDataIO* celldata = loadDataArray(dataArrayElement, m_numberOfCells);
                     checkError(celldata);
                     celldata->name = currentDataArrayName;
-                    inputCellDataVector.push_back(celldata);
+                    m_inputCellDataVector.push_back(celldata);
                 }
             }
         }

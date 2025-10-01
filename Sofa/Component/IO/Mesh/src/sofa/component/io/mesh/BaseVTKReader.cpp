@@ -34,13 +34,13 @@ namespace sofa::component::io::mesh::basevtkreader
 
 BaseVTKReader::BaseVTKReader()
     : m_inputPoints(nullptr),
-      inputNormals(nullptr),
-      inputPolygons(nullptr),
-      inputCells(nullptr),
-      inputCellOffsets(nullptr),
-      inputCellTypes(nullptr),
-      numberOfPoints(0),
-      numberOfCells(0)
+      m_inputNormals(nullptr),
+      m_inputPolygons(nullptr),
+      m_inputCells(nullptr),
+      m_inputCellOffsets(nullptr),
+      m_inputCellTypes(nullptr),
+      m_numberOfPoints(0),
+      m_numberOfCells(0)
 {
 }
 
@@ -284,7 +284,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
             }
         }
     }
-    result->nestedDataSize = num;
+    result->m_nestedDataSize = num;
     return result;
 }
 
