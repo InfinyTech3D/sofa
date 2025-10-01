@@ -1,47 +1,64 @@
 /******************************************************************************
-*                 SOFA, Simulation Open-Framework Architecture                *
-*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
-*                                                                             *
-* This program is free software; you can redistribute it and/or modify it     *
-* under the terms of the GNU Lesser General Public License as published by    *
-* the Free Software Foundation; either version 2.1 of the License, or (at     *
-* your option) any later version.                                             *
-*                                                                             *
-* This program is distributed in the hope that it will be useful, but WITHOUT *
-* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       *
-* FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License *
-* for more details.                                                           *
-*                                                                             *
-* You should have received a copy of the GNU Lesser General Public License    *
-* along with this program. If not, see <http://www.gnu.org/licenses/>.        *
-*******************************************************************************
-* Authors: The SOFA Team and external contributors (see Authors.txt)          *
-*                                                                             *
-* Contact information: contact@sofa-framework.org                             *
-******************************************************************************/
+ *                 SOFA, Simulation Open-Framework Architecture                *
+ *                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
+ *                                                                             *
+ * This program is free software; you can redistribute it and/or modify it     *
+ * under the terms of the GNU Lesser General Public License as published by    *
+ * the Free Software Foundation; either version 2.1 of the License, or (at     *
+ * your option) any later version.                                             *
+ *                                                                             *
+ * This program is distributed in the hope that it will be useful, but WITHOUT *
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       *
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License *
+ * for more details.                                                           *
+ *                                                                             *
+ * You should have received a copy of the GNU Lesser General Public License    *
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.        *
+ *******************************************************************************
+ * Authors: The SOFA Team and external contributors (see Authors.txt)          *
+ *                                                                             *
+ * Contact information: contact@sofa-framework.org                             *
+ ******************************************************************************/
+#include <sofa/component/io/mesh/BaseVTKReader.h>
 #include <sofa/component/io/mesh/MeshVTKLoader.h>
-
-#include <iostream>
-#include <cstdio>
-#include <sstream>
-#include <regex>
-
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/visual/VisualParams.h>
 
-#include <sofa/component/io/mesh/BaseVTKReader.h>
-using sofa::component::io::mesh::BaseVTKReader ;
+#include <cstdio>
+#include <iostream>
+#include <regex>
+#include <sstream>
+using sofa::component::io::mesh::BaseVTKReader;
 
 /// This is needed for template specialization.
-#include <sofa/component/io/mesh/BaseVTKReader.inl>
-
 #include <tinyxml2.h>
 
-//XML VTK Loader
-#define checkError(A) if (!A) { return false; }
-#define checkErrorPtr(A) if (!A) { return nullptr; }
-#define checkErrorMsg(A, B) if (!A) { msg_error() << B << "\n" ; return false; }
-#define checkErrorMsgAuto(A) if(A != tinyxml2::XML_SUCCESS) { msg_error() << "TinyXML error message : " << tinyxml2::XMLDocument::ErrorIDToName(A) << "\n" ; return false; }
+#include <sofa/component/io/mesh/BaseVTKReader.inl>
+
+// XML VTK Loader
+#define checkError(A) \
+    if (!A)           \
+    {                 \
+        return false; \
+    }
+#define checkErrorPtr(A) \
+    if (!A)              \
+    {                    \
+        return nullptr;  \
+    }
+#define checkErrorMsg(A, B)       \
+    if (!A)                       \
+    {                             \
+        msg_error() << B << "\n"; \
+        return false;             \
+    }
+#define checkErrorMsgAuto(A)                                                                 \
+    if (A != tinyxml2::XML_SUCCESS)                                                          \
+    {                                                                                        \
+        msg_error() << "TinyXML error message : " << tinyxml2::XMLDocument::ErrorIDToName(A) \
+                    << "\n";                                                                 \
+        return false;                                                                        \
+    }
 
 namespace sofa::component::io::mesh
 {
@@ -49,28 +66,29 @@ namespace sofa::component::io::mesh
 using namespace sofa::type;
 using namespace sofa::defaulttype;
 using namespace sofa::helper;
+using sofa::core::objectmodel::BaseData;
+using sofa::core::objectmodel::BaseObject;
 using sofa::core::objectmodel::ComponentState;
-using sofa::core::objectmodel::BaseData ;
-using sofa::core::objectmodel::BaseObject ;
-using sofa::type::Vec3 ;
-using sofa::type::Vec ;
-using std::istringstream;
+using sofa::type::Vec;
+using sofa::type::Vec3;
 using std::istream;
+using std::istringstream;
 using std::ofstream;
 using std::string;
 using type::vector;
 
 class LegacyVTKReader : public BaseVTKReader
 {
-public:
+   public:
     bool readFile(const char* filename) override;
 };
 
 class XMLVTKReader : public BaseVTKReader
 {
-public:
+   public:
     bool readFile(const char* filename) override;
-protected:
+
+   protected:
     bool loadUnstructuredGrid(tinyxml2::XMLHandle datasetFormatHandle);
     bool loadPolydata(tinyxml2::XMLHandle datasetFormatHandle);
     bool loadRectilinearGrid(tinyxml2::XMLHandle datasetFormatHandle);
@@ -84,16 +102,13 @@ protected:
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////// MeshVTKLoader IMPLEMENTATION //////////////////////////////////
-MeshVTKLoader::MeshVTKLoader() : MeshLoader()
-  , reader(nullptr)
-{
-}
+MeshVTKLoader::MeshVTKLoader() : MeshLoader(), reader(nullptr) {}
 
 MeshVTKLoader::VTKFileType MeshVTKLoader::detectFileType(const char* filename)
 {
     std::ifstream inVTKFile(filename, std::ifstream::in | std::ifstream::binary);
 
-    if( !inVTKFile.is_open() )
+    if (!inVTKFile.is_open())
     {
         return MeshVTKLoader::NONE;
     }
@@ -114,7 +129,7 @@ MeshVTKLoader::VTKFileType MeshVTKLoader::detectFileType(const char* filename)
             return MeshVTKLoader::NONE;
         }
     }
-    else if (line.find("<VTKFile") != string::npos)   //... not xml-compliant
+    else if (line.find("<VTKFile") != string::npos)  //... not xml-compliant
     {
         return MeshVTKLoader::XML;
     }
@@ -126,8 +141,9 @@ MeshVTKLoader::VTKFileType MeshVTKLoader::detectFileType(const char* filename)
         if (std::regex_search(line, match, pattern) && match.size() == 2)
         {
             std::string version = match[1].str();
-            if(stod(version) >= 5)
-                msg_warning() << "VTK5.+ format might not be well supported, see issue https://github.com/sofa-framework/sofa/issues/3405";
+            if (stod(version) >= 5)
+                msg_warning() << "VTK5.+ format might not be well supported, see issue "
+                                 "https://github.com/sofa-framework/sofa/issues/3405";
             else
                 msg_info() << "Extracted version: " << version;
         }
@@ -137,7 +153,7 @@ MeshVTKLoader::VTKFileType MeshVTKLoader::detectFileType(const char* filename)
         }
         return MeshVTKLoader::LEGACY;
     }
-    else //default behavior if the first line is not correct ?
+    else  // default behavior if the first line is not correct ?
     {
         return MeshVTKLoader::NONE;
     }
@@ -145,7 +161,7 @@ MeshVTKLoader::VTKFileType MeshVTKLoader::detectFileType(const char* filename)
 
 bool MeshVTKLoader::doLoad()
 {
-    msg_info() << "Loading VTK file: " << d_filename ;
+    msg_info() << "Loading VTK file: " << d_filename;
 
     bool fileRead = false;
 
@@ -156,16 +172,16 @@ bool MeshVTKLoader::doLoad()
     const MeshVTKLoader::VTKFileType type = detectFileType(filename);
     switch (type)
     {
-    case XML:
-        reader = new XMLVTKReader();
-        break;
-    case LEGACY:
-        reader = new LegacyVTKReader();
-        break;
-    default:
-        msg_error() << "Header not recognized" ;
-        reader = nullptr;
-        break;
+        case XML:
+            reader = new XMLVTKReader();
+            break;
+        case LEGACY:
+            reader = new LegacyVTKReader();
+            break;
+        default:
+            msg_error() << "Header not recognized";
+            reader = nullptr;
+            break;
     }
 
     if (!reader)
@@ -174,12 +190,12 @@ bool MeshVTKLoader::doLoad()
     }
 
     // -- Reading file
-    if(!canLoad())
+    if (!canLoad())
     {
         return false;
     }
 
-    fileRead = reader->readVTK (filename);
+    fileRead = reader->readVTK(filename);
     this->setInputsMesh();
     this->setInputsData();
 
@@ -193,15 +209,18 @@ bool MeshVTKLoader::setInputsMesh()
     auto my_positions = getWriteOnlyAccessor(d_positions);
     if (reader->inputPoints)
     {
-        BaseVTKReader::VTKDataIO<double>* vtkpd =  dynamic_cast<BaseVTKReader::VTKDataIO<double>* > (reader->inputPoints);
-        BaseVTKReader::VTKDataIO<float>* vtkpf =  dynamic_cast<BaseVTKReader::VTKDataIO<float>* > (reader->inputPoints);
+        BaseVTKReader::VTKDataIO<double>* vtkpd =
+            dynamic_cast<BaseVTKReader::VTKDataIO<double>*>(reader->m_inputPoints);
+        BaseVTKReader::VTKDataIO<float>* vtkpf =
+            dynamic_cast<BaseVTKReader::VTKDataIO<float>*>(reader->m_inputPoints);
         if (vtkpd)
         {
             const double* inPoints = (vtkpd->data);
             if (inPoints)
                 for (int i = 0; i < vtkpd->dataSize; i += 3)
                 {
-                    my_positions.push_back(Vec3d (double(inPoints[i + 0]), double(inPoints[i + 1]), double(inPoints[i + 2])));
+                    my_positions.push_back(Vec3d(double(inPoints[i + 0]), double(inPoints[i + 1]),
+                                                 double(inPoints[i + 2])));
                 }
             else
             {
@@ -214,7 +233,8 @@ bool MeshVTKLoader::setInputsMesh()
             if (inPoints)
                 for (int i = 0; i < vtkpf->dataSize; i += 3)
                 {
-                    my_positions.push_back(Vec3 (inPoints[i + 0], inPoints[i + 1], inPoints[i + 2]));
+                    my_positions.push_back(
+                        Vec3f(inPoints[i + 0], inPoints[i + 1], inPoints[i + 2]));
                 }
             else
             {
@@ -223,7 +243,7 @@ bool MeshVTKLoader::setInputsMesh()
         }
         else
         {
-            msg_info() << "Type of coordinate (X,Y,Z) not supported" ;
+            msg_info() << "Type of coordinate (X,Y,Z) not supported";
             return false;
         }
     }
@@ -233,10 +253,12 @@ bool MeshVTKLoader::setInputsMesh()
     }
 
     auto my_normals = getWriteOnlyAccessor(d_normals);
-    if(reader->inputNormals)
+    if (reader->inputNormals)
     {
-        BaseVTKReader::VTKDataIO<double>* vtkpd =  dynamic_cast<BaseVTKReader::VTKDataIO<double>* > (reader->inputNormals);
-        BaseVTKReader::VTKDataIO<float>* vtkpf =  dynamic_cast<BaseVTKReader::VTKDataIO<float>* > (reader->inputNormals);
+        BaseVTKReader::VTKDataIO<double>* vtkpd =
+            dynamic_cast<BaseVTKReader::VTKDataIO<double>*>(reader->inputNormals);
+        BaseVTKReader::VTKDataIO<float>* vtkpf =
+            dynamic_cast<BaseVTKReader::VTKDataIO<float>*>(reader->inputNormals);
 
         if (vtkpd)
         {
@@ -244,7 +266,8 @@ bool MeshVTKLoader::setInputsMesh()
             if (inNormals)
                 for (int i = 0; i < vtkpd->dataSize; i += 3)
                 {
-                    my_normals.push_back(Vec3 (double(inNormals[i + 0]), double(inNormals[i + 1]), double(inNormals[i + 2])));
+                    my_normals.push_back(Vec3(double(inNormals[i + 0]), double(inNormals[i + 1]),
+                                              double(inNormals[i + 2])));
                 }
             else
             {
@@ -266,11 +289,10 @@ bool MeshVTKLoader::setInputsMesh()
         }
         else
         {
-            msg_info() << "Type of coordinate (X,Y,Z) not supported" ;
+            msg_info() << "Type of coordinate (X,Y,Z) not supported";
             return false;
         }
     }
-
 
     auto my_polylines = getWriteOnlyAccessor(d_polylines);
     auto my_edges = getWriteOnlyAccessor(d_edges);
@@ -284,7 +306,7 @@ bool MeshVTKLoader::setInputsMesh()
     int errorcount = 0;
     if (reader->inputPolygons)
     {
-        const int* inFP = (const int*) reader->inputPolygons->getData();
+        const int* inFP = (const int*)reader->inputPolygons->getData();
         int poly = 0;
         for (int i = 0; i < reader->inputPolygons->dataSize;)
         {
@@ -301,14 +323,14 @@ bool MeshVTKLoader::setInputsMesh()
                         /// in case of severely broken file.
                         errorcount++;
 
-                        if(errorcount < 20)
+                        if (errorcount < 20)
                         {
-
-                            msg_error() << "invalid point at " << i + j << " in polygon " << poly ;
+                            msg_error() << "invalid point at " << i + j << " in polygon " << poly;
                         }
-                        if(errorcount == 20)
+                        if (errorcount == 20)
                         {
-                            msg_error() << "too much invalid points in polygon '" << poly << "' ...now hiding others error message." ;
+                            msg_error() << "too much invalid points in polygon '" << poly
+                                        << "' ...now hiding others error message.";
                         }
                         valid = false;
                     }
@@ -318,7 +340,8 @@ bool MeshVTKLoader::setInputsMesh()
             {
                 if (nv == 4)
                 {
-                    addQuad(my_quads.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + 1]), unsigned(inFP[i + 2]), unsigned(inFP[i + 3]));
+                    addQuad(my_quads.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + 1]),
+                            unsigned(inFP[i + 2]), unsigned(inFP[i + 3]));
                 }
                 else if (nv >= 3)
                 {
@@ -328,7 +351,8 @@ bool MeshVTKLoader::setInputsMesh()
                     for (int j = 2; j < nv; j++)
                     {
                         f[2] = inFP[i + j];
-                        addTriangle(my_triangles.wref(), unsigned(f[0]), unsigned(f[1]), unsigned(f[2]));
+                        addTriangle(my_triangles.wref(), unsigned(f[0]), unsigned(f[1]),
+                                    unsigned(f[2]));
                         f[1] = f[2];
                     }
                 }
@@ -339,49 +363,52 @@ bool MeshVTKLoader::setInputsMesh()
     }
     else if (reader->inputCells && reader->inputCellTypes)
     {
-        const int* inFP = (const int*) reader->inputCells->getData();
-        //std::cout 
-        //    << "inFP: " 
-        //    << inFP[0] << " " << inFP[1] << " " << inFP[2]
-        //    << " "
-        //    << inFP[3] << " " << inFP[4] << " " << inFP[5]
-        //    << std::endl
-        //    << "inFP: " 
-        //    << inFP[6] << " " << inFP[7] << " " << inFP[8]
-        //    << " "
-        //    << inFP[9] << " " << inFP[10] << " " << inFP[11]
-        //    << std::endl
-        //    << "inFP: " 
-        //    << inFP[12] << " " << inFP[13] << " " << inFP[14]
-        //    << " "
-        //    << inFP[15] << " " << inFP[16] << " " << inFP[17]
-        //    << std::endl;
+        const int* inFP = (const int*)reader->inputCells->getData();
+        // std::cout
+        //     << "inFP: "
+        //     << inFP[0] << " " << inFP[1] << " " << inFP[2]
+        //     << " "
+        //     << inFP[3] << " " << inFP[4] << " " << inFP[5]
+        //     << std::endl
+        //     << "inFP: "
+        //     << inFP[6] << " " << inFP[7] << " " << inFP[8]
+        //     << " "
+        //     << inFP[9] << " " << inFP[10] << " " << inFP[11]
+        //     << std::endl
+        //     << "inFP: "
+        //     << inFP[12] << " " << inFP[13] << " " << inFP[14]
+        //     << " "
+        //     << inFP[15] << " " << inFP[16] << " " << inFP[17]
+        //     << std::endl;
 
-        //offsets are not used if we have parsed with the legacy method
-        const int* offsets = (reader->inputCellOffsets == nullptr) ? nullptr : (const int*) reader->inputCellOffsets->getData();
+        // offsets are not used if we have parsed with the legacy method
+        const int* offsets = (reader->inputCellOffsets == nullptr)
+                                 ? nullptr
+                                 : (const int*)reader->inputCellOffsets->getData();
 
         const int* dataT = (int*)(reader->inputCellTypes->getData());
 
         type::vector<int> numSubPolyLines;
 
         const unsigned int edgesInQuadraticTriangle[3][2] = {{0, 1}, {1, 2}, {2, 0}};
-        const unsigned int edgesInQuadraticTetrahedron[6][2] = {{0, 1}, {1, 2}, {0, 2}, {0, 3}, {1, 3}, {2, 3}};
+        const unsigned int edgesInQuadraticTetrahedron[6][2] = {{0, 1}, {1, 2}, {0, 2},
+                                                                {0, 3}, {1, 3}, {2, 3}};
         std::set<topology::Edge> edgeSet;
         size_t j;
         int nbf = reader->numberOfCells;
         int i = 0;
         for (int c = 0; c < nbf; ++c)
         {
-            int t = dataT[c];// - 48; //ASCII
+            int t = dataT[c];  // - 48; //ASCII
             int nv;
             if (offsets)
             {
                 i = (c == 0) ? 0 : offsets[c - 1];
                 nv = inFP[i];
-                //std::cout << "inFP: " 
-                //    << inFP[i + 0] << " " << inFP[i + 1] << " " << inFP[i + 2]
-                //    << std::endl;
-                //std::cout << "i : " << i << std::endl;
+                // std::cout << "inFP: "
+                //     << inFP[i + 0] << " " << inFP[i + 1] << " " << inFP[i + 2]
+                //     << std::endl;
+                // std::cout << "i : " << i << std::endl;
             }
             else
             {
@@ -391,127 +418,141 @@ bool MeshVTKLoader::setInputsMesh()
 
             switch (t)
             {
-            case 0: // EMPTY_CELL
-                break;
-            case 1: // VERTEX
-                break;
-            case 2: // POLY_VERTEX
-                break;
-            case 3: // LINE
-                addEdge(my_edges.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + 1]));
-                break;
-            case 4: // POLY_LINE
-            {
-                numSubPolyLines.push_back(nv);
-                std::vector<PointID> points;
-                for (int v = 0; v < nv; ++v)
+                case 0:  // EMPTY_CELL
+                    break;
+                case 1:  // VERTEX
+                    break;
+                case 2:  // POLY_VERTEX
+                    break;
+                case 3:  // LINE
+                    addEdge(my_edges.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + 1]));
+                    break;
+                case 4:  // POLY_LINE
                 {
-                    points.push_back(unsigned(inFP[i + v]));
-                }
-                addPolyline(my_polylines.wref(), points);
-            }
-                break;
-            case 5: // TRIANGLE
-                addTriangle(my_triangles.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + 1]), unsigned(inFP[i + 2]));
-                break;
-            case 6: // TRIANGLE_STRIP
-                for (int j = 0; j < nv - 2; j++)
-                    if (j & 1)
+                    numSubPolyLines.push_back(nv);
+                    std::vector<PointID> points;
+                    for (int v = 0; v < nv; ++v)
                     {
-                        addTriangle(my_triangles.wref(), unsigned(inFP[i + j + 0]), unsigned(inFP[i + j + 1]), unsigned(inFP[i + j + 2]));
+                        points.push_back(unsigned(inFP[i + v]));
                     }
-                    else
-                    {
-                        addTriangle(my_triangles.wref(), unsigned(inFP[i + j + 0]), unsigned(inFP[i + j + 2]), unsigned(inFP[i + j + 1]));
-                    }
-                break;
-            case 7: // POLYGON
-                for (int j = 2; j < nv; j++)
-                {
-                    addTriangle(my_triangles.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + j - 1]), unsigned(inFP[i + j]));
+                    addPolyline(my_polylines.wref(), points);
                 }
                 break;
-            case 8: // PIXEL
-                addQuad(my_quads.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + 1]), unsigned(inFP[i + 3]), unsigned(inFP[i + 2]));
-                break;
-            case 9: // QUAD
-                addQuad(my_quads.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + 1]), unsigned(inFP[i + 2]), unsigned(inFP[i + 3]));
-                break;
-            case 10: // TETRA
-                //std::cout << inFP[i + 0] << " " << inFP[i + 1] << " " << inFP[i + 2] << " "
-                //          << inFP[i + 3] << std::endl;
-                addTetrahedron(my_tetrahedra.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + 1]), unsigned(inFP[i + 2]), unsigned(inFP[i + 3]));
-                break;
-            case 11: // VOXEL
-                addHexahedron(my_hexahedra.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + 1]), unsigned(inFP[i + 3]), unsigned(inFP[i + 2]),
-                        unsigned(inFP[i + 4]), unsigned(inFP[i + 5]), unsigned(inFP[i + 7]), unsigned(inFP[i + 6]));
-                break;
-            case 12: // HEXAHEDRON
-                addHexahedron(my_hexahedra.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + 1]), unsigned(inFP[i + 2]), unsigned(inFP[i + 3]),
-                        unsigned(inFP[i + 4]), unsigned(inFP[i + 5]), unsigned(inFP[i + 6]), unsigned(inFP[i + 7]));
-                break;
-            case 21: // QUADRATIC Edge
-                addEdge(my_edges.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + 1]));
-            {
-                HighOrderEdgePosition hoep;
-                hoep[0] = unsigned(inFP[i + 2]);
-                hoep[1] = unsigned(my_edges.size() - 1);
-                hoep[2] = 1;
-                hoep[3] = 1;
-                my_highOrderEdgePositions.push_back(hoep);
-            }
-                break;
-            case 22: // QUADRATIC Triangle
-                addTriangle(my_triangles.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + 1]), unsigned(inFP[i + 2]));
-            {
-                HighOrderEdgePosition hoep;
-                for(j = 0; j < 3; ++j)
-                {
-                    sofa::Index v0 = std::min( inFP[i + edgesInQuadraticTriangle[j][0]],
-                            inFP[i + edgesInQuadraticTriangle[j][1]]);
-                    sofa::Index v1 = std::max( inFP[i + edgesInQuadraticTriangle[j][0]],
-                            inFP[i + edgesInQuadraticTriangle[j][1]]);
-                    topology::Edge e(v0, v1);
-                    if (!edgeSet.contains(e))
+                case 5:  // TRIANGLE
+                    addTriangle(my_triangles.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + 1]),
+                                unsigned(inFP[i + 2]));
+                    break;
+                case 6:  // TRIANGLE_STRIP
+                    for (int j = 0; j < nv - 2; j++)
+                        if (j & 1)
+                        {
+                            addTriangle(my_triangles.wref(), unsigned(inFP[i + j + 0]),
+                                        unsigned(inFP[i + j + 1]), unsigned(inFP[i + j + 2]));
+                        }
+                        else
+                        {
+                            addTriangle(my_triangles.wref(), unsigned(inFP[i + j + 0]),
+                                        unsigned(inFP[i + j + 2]), unsigned(inFP[i + j + 1]));
+                        }
+                    break;
+                case 7:  // POLYGON
+                    for (int j = 2; j < nv; j++)
                     {
-                        edgeSet.insert(e);
-                        addEdge(my_edges.wref(), v0, v1);
-                        hoep[0] = inFP[i + j + 3];
-                        hoep[1] = sofa::Size(my_edges.size()) - 1;
+                        addTriangle(my_triangles.wref(), unsigned(inFP[i + 0]),
+                                    unsigned(inFP[i + j - 1]), unsigned(inFP[i + j]));
+                    }
+                    break;
+                case 8:  // PIXEL
+                    addQuad(my_quads.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + 1]),
+                            unsigned(inFP[i + 3]), unsigned(inFP[i + 2]));
+                    break;
+                case 9:  // QUAD
+                    addQuad(my_quads.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + 1]),
+                            unsigned(inFP[i + 2]), unsigned(inFP[i + 3]));
+                    break;
+                case 10:  // TETRA
+                    // std::cout << inFP[i + 0] << " " << inFP[i + 1] << " " << inFP[i + 2] << " "
+                    //           << inFP[i + 3] << std::endl;
+                    addTetrahedron(my_tetrahedra.wref(), unsigned(inFP[i + 0]),
+                                   unsigned(inFP[i + 1]), unsigned(inFP[i + 2]),
+                                   unsigned(inFP[i + 3]));
+                    break;
+                case 11:  // VOXEL
+                    addHexahedron(my_hexahedra.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + 1]),
+                                  unsigned(inFP[i + 3]), unsigned(inFP[i + 2]),
+                                  unsigned(inFP[i + 4]), unsigned(inFP[i + 5]),
+                                  unsigned(inFP[i + 7]), unsigned(inFP[i + 6]));
+                    break;
+                case 12:  // HEXAHEDRON
+                    addHexahedron(my_hexahedra.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + 1]),
+                                  unsigned(inFP[i + 2]), unsigned(inFP[i + 3]),
+                                  unsigned(inFP[i + 4]), unsigned(inFP[i + 5]),
+                                  unsigned(inFP[i + 6]), unsigned(inFP[i + 7]));
+                    break;
+                case 21:  // QUADRATIC Edge
+                    addEdge(my_edges.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + 1]));
+                    {
+                        HighOrderEdgePosition hoep;
+                        hoep[0] = unsigned(inFP[i + 2]);
+                        hoep[1] = unsigned(my_edges.size() - 1);
                         hoep[2] = 1;
                         hoep[3] = 1;
                         my_highOrderEdgePositions.push_back(hoep);
                     }
-                }
-            }
-                break;
-            case 24: // QUADRATIC Tetrahedron
-                addTetrahedron(my_tetrahedra.wref(), inFP[i + 0], inFP[i + 1], inFP[i + 2], inFP[i + 3]);
-            {
-                HighOrderEdgePosition hoep;
-                for(j = 0; j < 6; ++j)
-                {
-                    sofa::Index v0 = std::min( inFP[i + edgesInQuadraticTetrahedron[j][0]],
-                            inFP[i + edgesInQuadraticTetrahedron[j][1]]);
-                    sofa::Index v1 = std::max( inFP[i + edgesInQuadraticTetrahedron[j][0]],
-                            inFP[i + edgesInQuadraticTetrahedron[j][1]]);
-                    topology::Edge e(v0, v1);
-                    if (!edgeSet.contains(e))
+                    break;
+                case 22:  // QUADRATIC Triangle
+                    addTriangle(my_triangles.wref(), unsigned(inFP[i + 0]), unsigned(inFP[i + 1]),
+                                unsigned(inFP[i + 2]));
                     {
-                        edgeSet.insert(e);
-                        addEdge(my_edges.wref(), v0, v1);
-                        hoep[0] = inFP[i + j + 4];
-                        hoep[1] = sofa::Size(my_edges.size()) - 1;
-                        hoep[2] = 1;
-                        hoep[3] = 1;
-                        my_highOrderEdgePositions.push_back(hoep);
+                        HighOrderEdgePosition hoep;
+                        for (j = 0; j < 3; ++j)
+                        {
+                            sofa::Index v0 = std::min(inFP[i + edgesInQuadraticTriangle[j][0]],
+                                                      inFP[i + edgesInQuadraticTriangle[j][1]]);
+                            sofa::Index v1 = std::max(inFP[i + edgesInQuadraticTriangle[j][0]],
+                                                      inFP[i + edgesInQuadraticTriangle[j][1]]);
+                            topology::Edge e(v0, v1);
+                            if (!edgeSet.contains(e))
+                            {
+                                edgeSet.insert(e);
+                                addEdge(my_edges.wref(), v0, v1);
+                                hoep[0] = inFP[i + j + 3];
+                                hoep[1] = sofa::Size(my_edges.size()) - 1;
+                                hoep[2] = 1;
+                                hoep[3] = 1;
+                                my_highOrderEdgePositions.push_back(hoep);
+                            }
+                        }
                     }
-                }
-            }
-                break;
-                // more types are defined in vtkCellType.h in libvtk
-            default:
-                msg_error() << "Unsupported cell type " << t;
+                    break;
+                case 24:  // QUADRATIC Tetrahedron
+                    addTetrahedron(my_tetrahedra.wref(), inFP[i + 0], inFP[i + 1], inFP[i + 2],
+                                   inFP[i + 3]);
+                    {
+                        HighOrderEdgePosition hoep;
+                        for (j = 0; j < 6; ++j)
+                        {
+                            sofa::Index v0 = std::min(inFP[i + edgesInQuadraticTetrahedron[j][0]],
+                                                      inFP[i + edgesInQuadraticTetrahedron[j][1]]);
+                            sofa::Index v1 = std::max(inFP[i + edgesInQuadraticTetrahedron[j][0]],
+                                                      inFP[i + edgesInQuadraticTetrahedron[j][1]]);
+                            topology::Edge e(v0, v1);
+                            if (!edgeSet.contains(e))
+                            {
+                                edgeSet.insert(e);
+                                addEdge(my_edges.wref(), v0, v1);
+                                hoep[0] = inFP[i + j + 4];
+                                hoep[1] = sofa::Size(my_edges.size()) - 1;
+                                hoep[2] = 1;
+                                hoep[3] = 1;
+                                my_highOrderEdgePositions.push_back(hoep);
+                            }
+                        }
+                    }
+                    break;
+                    // more types are defined in vtkCellType.h in libvtk
+                default:
+                    msg_error() << "Unsupported cell type " << t;
             }
 
             if (!offsets)
@@ -526,7 +567,8 @@ bool MeshVTKLoader::setInputsMesh()
             reader->inputCellDataVector.resize(sz + 1);
             reader->inputCellDataVector[sz] = reader->newVTKDataIO("int");
 
-            BaseVTKReader::VTKDataIO<int>* cellData = dynamic_cast<BaseVTKReader::VTKDataIO<int>* > (reader->inputCellDataVector[sz]);
+            BaseVTKReader::VTKDataIO<int>* cellData =
+                dynamic_cast<BaseVTKReader::VTKDataIO<int>*>(reader->inputCellDataVector[sz]);
 
             if (cellData == nullptr)
             {
@@ -535,14 +577,13 @@ bool MeshVTKLoader::setInputsMesh()
 
             cellData->resize((int)numSubPolyLines.size());
 
-            for (size_t ii = 0;  ii < numSubPolyLines.size(); ii++)
+            for (size_t ii = 0; ii < numSubPolyLines.size(); ii++)
             {
                 cellData->data[ii] = numSubPolyLines[ii];
             }
 
             cellData->name = "PolyLineSubEdges";
         }
-
     }
     if (reader->inputPoints)
     {
@@ -570,7 +611,7 @@ bool MeshVTKLoader::setInputsMesh()
 
 bool MeshVTKLoader::setInputsData()
 {
-    ///Point Data
+    /// Point Data
     for (const auto& inputPointData : reader->inputPointDataVector)
     {
         const char* dataname = inputPointData->name.c_str();
@@ -578,10 +619,9 @@ bool MeshVTKLoader::setInputsData()
         BaseData* basedata = inputPointData->createSofaData();
         this->addData(basedata, dataname);
         addOutputsToCallback("filename", {basedata});
-
     }
 
-    ///Cell Data
+    /// Cell Data
     for (const auto& inputCellData : reader->inputCellDataVector)
     {
         const char* dataname = inputCellData->name.c_str();
@@ -595,14 +635,15 @@ bool MeshVTKLoader::setInputsData()
 
 void MeshVTKLoader::doClearBuffers()
 {
-    // Should clear data fields added by setInputsData(), Preferably without using abstractTypeInfo...
+    // Should clear data fields added by setInputsData(), Preferably without using
+    // abstractTypeInfo...
 }
 
-//Legacy VTK Loader
+// Legacy VTK Loader
 bool LegacyVTKReader::readFile(const char* filename)
 {
     std::ifstream inVTKFile(filename, std::ifstream::in | std::ifstream::binary);
-    if( !inVTKFile.is_open() )
+    if (!inVTKFile.is_open())
     {
         return false;
     }
@@ -613,7 +654,7 @@ bool LegacyVTKReader::readFile(const char* filename)
     std::getline(inVTKFile, line);
     if (string(line, 0, 23) != "# vtk DataFile Version ")
     {
-        msg_error() << "Unrecognized header in file '" << filename << "'." ;
+        msg_error() << "Unrecognized header in file '" << filename << "'.";
         return false;
     }
     string version(line, 23);
@@ -626,52 +667,52 @@ bool LegacyVTKReader::readFile(const char* filename)
     std::getline(inVTKFile, line);
 
     int binary;
-    if (line == "BINARY" || line == "BINARY\r" )
+    if (line == "BINARY" || line == "BINARY\r")
     {
         binary = 1;
     }
-    else if ( line == "ASCII" || line == "ASCII\r")
+    else if (line == "ASCII" || line == "ASCII\r")
     {
         binary = 0;
     }
     else
     {
-        msg_error() << "Unrecognized format in file '" << filename << "'." ;
+        msg_error() << "Unrecognized format in file '" << filename << "'.";
         return false;
     }
 
     if (binary && strlen(filename) > 9 && !strcmp(filename + strlen(filename) - 9, ".vtk_swap"))
     {
-        binary = 2;    // bytes will be swapped
+        binary = 2;  // bytes will be swapped
     }
-
 
     // Part 4
     do
     {
         std::getline(inVTKFile, line);
-    }
-    while (line.empty());
-    if (line != "DATASET POLYDATA" && line != "DATASET UNSTRUCTURED_GRID"
-            && line != "DATASET POLYDATA\r" && line != "DATASET UNSTRUCTURED_GRID\r" )
+    } while (line.empty());
+    if (line != "DATASET POLYDATA" && line != "DATASET UNSTRUCTURED_GRID" &&
+        line != "DATASET POLYDATA\r" && line != "DATASET UNSTRUCTURED_GRID\r")
     {
         msg_error() << "Unsupported data type in file '" << filename << "'.";
         return false;
     }
 
-    msg_info() << (binary == 0 ? "Text" : (binary == 1) ? "Binary" : "Swapped Binary") << " VTK File (version " << version << "): " << header ;
+    msg_info() << (binary == 0     ? "Text"
+                   : (binary == 1) ? "Binary"
+                                   : "Swapped Binary")
+               << " VTK File (version " << version << "): " << header;
     VTKDataIO<int>* inputPolygonsInt = nullptr;
     VTKDataIO<int>* inputCellsInt = nullptr;
     VTKDataIO<int>* inputCellTypesInt = nullptr;
     inputCellOffsets = nullptr;
 
-    while(!inVTKFile.eof())
+    while (!inVTKFile.eof())
     {
         do
         {
             std::getline(inVTKFile, line);
-        }
-        while (!inVTKFile.eof() && line.empty());
+        } while (!inVTKFile.eof() && line.empty());
 
         istringstream ln(line);
         string kw;
@@ -691,15 +732,15 @@ bool LegacyVTKReader::readFile(const char* filename)
             {
                 return false;
             }
-            //nbp = n;
+            // nbp = n;
         }
         else if (kw == "POLYGONS")
         {
             int n, ni;
             ln >> n >> ni;
-            msg_info() << n << " polygons ( " << (ni - 3 * n) << " triangles )" ;
+            msg_info() << n << " polygons ( " << (ni - 3 * n) << " triangles )";
             inputPolygons = new VTKDataIO<int>;
-            inputPolygonsInt = dynamic_cast<VTKDataIO<int>* > (inputPolygons);
+            inputPolygonsInt = dynamic_cast<VTKDataIO<int>*>(inputPolygons);
             if (!inputPolygons->read(inVTKFile, ni, binary))
             {
                 return false;
@@ -709,22 +750,22 @@ bool LegacyVTKReader::readFile(const char* filename)
         {
             int n, ni;
             ln >> n >> ni;
-            msg_info() << "Found " << n << " cells" ;
+            msg_info() << "Found " << n << " cells";
             inputCells = new VTKDataIO<int>;
-            inputCellsInt = dynamic_cast<VTKDataIO<int>* > (inputCells);
+            inputCellsInt = dynamic_cast<VTKDataIO<int>*>(inputCells);
             if (!inputCells->read(inVTKFile, ni, binary))
             {
                 return false;
             }
-                numberOfCells = n;
+            numberOfCells = n;
         }
         else if (kw == "LINES")
         {
             int n, ni;
             ln >> n >> ni;
-            msg_info() << "Found " << n << " lines" ;
+            msg_info() << "Found " << n << " lines";
             inputCells = new VTKDataIO<int>;
-            inputCellsInt = dynamic_cast<VTKDataIO<int>* > (inputCellsInt);
+            inputCellsInt = dynamic_cast<VTKDataIO<int>*>(inputCellsInt);
             if (!inputCells->read(inVTKFile, ni, binary))
             {
                 return false;
@@ -732,7 +773,7 @@ bool LegacyVTKReader::readFile(const char* filename)
             numberOfCells = n;
 
             inputCellTypes = new VTKDataIO<int>;
-            inputCellTypesInt = dynamic_cast<VTKDataIO<int>* > (inputCellTypes);
+            inputCellTypesInt = dynamic_cast<VTKDataIO<int>*>(inputCellTypes);
             inputCellTypesInt->resize(n);
             for (int i = 0; i < n; i++)
             {
@@ -744,7 +785,7 @@ bool LegacyVTKReader::readFile(const char* filename)
             int n;
             ln >> n;
             inputCellTypes = new VTKDataIO<int>;
-            inputCellTypesInt = dynamic_cast<VTKDataIO<int>* > (inputCellTypes);
+            inputCellTypesInt = dynamic_cast<VTKDataIO<int>*>(inputCellTypes);
             if (!inputCellTypes->read(inVTKFile, n, binary))
             {
                 return false;
@@ -753,7 +794,8 @@ bool LegacyVTKReader::readFile(const char* filename)
         else if (kw == "CELL_DATA" || kw == "POINT_DATA")
         {
             const bool cellData = (kw == "CELL_DATA");
-            type::vector<BaseVTKDataIO*>& inputDataVector = cellData ? inputCellDataVector : inputPointDataVector;
+            type::vector<BaseVTKDataIO*>& inputDataVector = cellData ? inputCellDataVector
+                                                                     : inputPointDataVector;
             int nb_ele;
             ln >> nb_ele;
             while (!inVTKFile.eof())
@@ -763,8 +805,7 @@ bool LegacyVTKReader::readFile(const char* filename)
                 do
                 {
                     std::getline(inVTKFile, line);
-                }
-                while (!inVTKFile.eof() && line.empty());
+                } while (!inVTKFile.eof() && line.empty());
 
                 if (line.empty())
                 {
@@ -774,18 +815,19 @@ bool LegacyVTKReader::readFile(const char* filename)
                 string dataStructure;
                 lnData >> dataStructure;
 
-                msg_info() << "Data structure: " << dataStructure ;
+                msg_info() << "Data structure: " << dataStructure;
 
                 if (dataStructure == "SCALARS")
                 {
                     string dataName, dataType;
                     lnData >> dataName >> dataType;
-                    BaseVTKDataIO*  data = newVTKDataIO(dataType);
+                    BaseVTKDataIO* data = newVTKDataIO(dataType);
                     if (data != nullptr)
                     {
                         {
                             // skip lookup_table if present
-                            const std::ifstream::pos_type positionBeforeLookupTable = inVTKFile.tellg();
+                            const std::ifstream::pos_type positionBeforeLookupTable =
+                                inVTKFile.tellg();
                             std::string lookupTable;
                             std::string lookupTableName;
                             std::getline(inVTKFile, line);
@@ -793,7 +835,8 @@ bool LegacyVTKReader::readFile(const char* filename)
                             lnDataLookup >> lookupTable >> lookupTableName;
                             if (lookupTable == "LOOKUP_TABLE")
                             {
-                                msg_info() << "Ignoring lookup table named \"" << lookupTableName << "\".";
+                                msg_info()
+                                    << "Ignoring lookup table named \"" << lookupTableName << "\".";
                             }
                             else
                             {
@@ -818,13 +861,13 @@ bool LegacyVTKReader::readFile(const char* filename)
                             delete data;
                         }
                     }
-
                 }
                 else if (dataStructure == "NORMALS")
                 {
                     string dataName, dataType;
                     lnData >> dataName >> dataType;
-                    msg_info() << "Reading normals named \"" << dataName << "\" of type \"" << dataType << "\".";
+                    msg_info() << "Reading normals named \"" << dataName << "\" of type \""
+                               << dataType << "\".";
                     inputNormals = newVTKDataIO(dataType);
                     if (inputNormals == nullptr)
                     {
@@ -839,7 +882,7 @@ bool LegacyVTKReader::readFile(const char* filename)
                 {
                     string dataName, dataType;
                     lnData >> dataName >> dataType;
-                    BaseVTKDataIO*  data = newVTKDataIO(dataType, 3);
+                    BaseVTKDataIO* data = newVTKDataIO(dataType, 3);
                     if (data != nullptr)
                     {
                         if (data->read(inVTKFile, nb_ele, binary))
@@ -866,22 +909,23 @@ bool LegacyVTKReader::readFile(const char* filename)
                     std::string fieldName;
                     unsigned int nb_arrays = 0u;
                     lnData >> fieldName >> nb_arrays;
-                    msg_info() << "Reading field \"" << fieldName << "\" with " << nb_arrays << " arrays.";
-                    for (unsigned field = 0u ; field < nb_arrays ; ++field)
+                    msg_info() << "Reading field \"" << fieldName << "\" with " << nb_arrays
+                               << " arrays.";
+                    for (unsigned field = 0u; field < nb_arrays; ++field)
                     {
                         do
                         {
                             std::getline(inVTKFile, line);
-                        }
-                        while (line.empty());
+                        } while (line.empty());
                         istringstream lnData(line);
                         std::string dataName;
                         int nbData;
                         int nbComponents;
                         std::string dataType;
                         lnData >> dataName >> nbComponents >> nbData >> dataType;
-                        msg_info() << "Reading field data named \"" << dataName << "\" of type \"" << dataType << "\" with " << nbComponents << " components.";
-                        BaseVTKDataIO*  data = newVTKDataIO(dataType, nbComponents);
+                        msg_info() << "Reading field data named \"" << dataName << "\" of type \""
+                                   << dataType << "\" with " << nbComponents << " components.";
+                        BaseVTKDataIO* data = newVTKDataIO(dataType, nbComponents);
                         if (data != nullptr)
                         {
                             if (data->read(inVTKFile, nbData, binary))
@@ -900,10 +944,13 @@ bool LegacyVTKReader::readFile(const char* filename)
                 {
                     std::string tableName;
                     lnData >> tableName >> nb_ele;
-                    msg_info() << "Ignoring the definition of the lookup table named \"" << tableName << "\".";
+                    msg_info() << "Ignoring the definition of the lookup table named \""
+                               << tableName << "\".";
                     if (binary)
                     {
-                        BaseVTKDataIO* data = newVTKDataIO("UInt8", 4); // in the binary case there will be 4 unsigned chars per table entry
+                        BaseVTKDataIO* data =
+                            newVTKDataIO("UInt8", 4);  // in the binary case there will be 4
+                                                       // unsigned chars per table entry
                         if (data)
                         {
                             data->read(inVTKFile, nb_ele, binary);
@@ -915,12 +962,13 @@ bool LegacyVTKReader::readFile(const char* filename)
                         BaseVTKDataIO* data = newVTKDataIO("Float32", 4);
                         if (data)
                         {
-                            data->read(inVTKFile, nb_ele, binary);    // in the ascii case there will be 4 float32 per table entry
+                            data->read(inVTKFile, nb_ele, binary);  // in the ascii case there will
+                                                                    // be 4 float32 per table entry
                         }
                         delete data;
                     }
                 }
-                else     /// TODO
+                else  /// TODO
                 {
                     inVTKFile.seekg(previousPos);
                     break;
@@ -930,18 +978,18 @@ bool LegacyVTKReader::readFile(const char* filename)
         }
         else if (!kw.empty())
         {
-            msg_warning() << "Unknown keyword " << kw ;
+            msg_warning() << "Unknown keyword " << kw;
         }
 
-        msg_info() << "LNG: " << inputCellDataVector.size() ;
+        msg_info() << "LNG: " << inputCellDataVector.size();
 
         if (inputPoints && inputPolygons)
         {
-            break;    // already found the mesh description, skip the rest
+            break;  // already found the mesh description, skip the rest
         }
         if (inputPoints && inputCells && inputCellTypes && inputCellDataVector.size() > 0)
         {
-            break;    // already found the mesh description, skip the rest
+            break;  // already found the mesh description, skip the rest
         }
     }
 
@@ -951,14 +999,16 @@ bool LegacyVTKReader::readFile(const char* filename)
         bool swapped = false;
         if (inputPolygons)
         {
-            if ((unsigned)inputPolygonsInt->data[0] > (unsigned)inputPolygonsInt->swapT(inputPolygonsInt->data[0], 1))
+            if ((unsigned)inputPolygonsInt->data[0] >
+                (unsigned)inputPolygonsInt->swapT(inputPolygonsInt->data[0], 1))
             {
                 swapped = true;
             }
         }
         else if (inputCells && inputCellTypes)
         {
-            if ((unsigned)inputCellTypesInt->data[0] > (unsigned)inputCellTypesInt->swapT(inputCellTypesInt->data[0], 1 ))
+            if ((unsigned)inputCellTypesInt->data[0] >
+                (unsigned)inputCellTypesInt->swapT(inputCellTypesInt->data[0], 1))
             {
                 swapped = true;
             }
@@ -990,25 +1040,25 @@ bool LegacyVTKReader::readFile(const char* filename)
 
 bool XMLVTKReader::readFile(const char* filename)
 {
-    tinyxml2::XMLDocument vtkDoc(true,tinyxml2::COLLAPSE_WHITESPACE);
-    //quick check
+    tinyxml2::XMLDocument vtkDoc(true, tinyxml2::COLLAPSE_WHITESPACE);
+    // quick check
     checkErrorMsgAuto(vtkDoc.LoadFile(filename))
 
-    tinyxml2::XMLHandle hVTKDoc(&vtkDoc);
+        tinyxml2::XMLHandle hVTKDoc(&vtkDoc);
     tinyxml2::XMLElement* pElem;
     tinyxml2::XMLHandle hVTKDocRoot(nullptr);
 
-    //block VTKFile
+    // block VTKFile
     pElem = hVTKDoc.FirstChildElement().ToElement();
     checkErrorMsg(pElem, "VTKFile Node not found");
 
     hVTKDocRoot = tinyxml2::XMLHandle(pElem);
 
-    //Endianness
+    // Endianness
     const char* endiannessStrTemp = pElem->Attribute("byte_order");
-    isLittleEndian = (string(endiannessStrTemp).compare("LittleEndian") == 0) ;
+    isLittleEndian = (string(endiannessStrTemp).compare("LittleEndian") == 0);
 
-    //read VTK data format type
+    // read VTK data format type
     const char* datasetFormatStrTemp = pElem->Attribute("type");
     checkErrorMsg(datasetFormatStrTemp, "Dataset format not defined");
     const string datasetFormatStr = string(datasetFormatStrTemp);
@@ -1043,32 +1093,33 @@ bool XMLVTKReader::readFile(const char* filename)
         checkErrorMsg(false, "Dataset format " << datasetFormatStr << " not recognized");
     }
 
-    const tinyxml2::XMLHandle datasetFormatHandle = tinyxml2::XMLHandle(hVTKDocRoot.FirstChildElement( datasetFormatStr.c_str() ));
+    const tinyxml2::XMLHandle datasetFormatHandle =
+        tinyxml2::XMLHandle(hVTKDocRoot.FirstChildElement(datasetFormatStr.c_str()));
 
     bool stateLoading = false;
     switch (datasetFormat)
     {
-    case VTKDatasetFormat::UNSTRUCTURED_GRID :
-        stateLoading = loadUnstructuredGrid(datasetFormatHandle);
-        break;
-    case VTKDatasetFormat::POLYDATA :
-        stateLoading = loadPolydata(datasetFormatHandle);
-        break;
-    case VTKDatasetFormat::RECTILINEAR_GRID :
-        stateLoading = loadRectilinearGrid(datasetFormatHandle);
-        break;
-    case VTKDatasetFormat::STRUCTURED_GRID :
-        stateLoading = loadStructuredGrid(datasetFormatHandle);
-        break;
-    case VTKDatasetFormat::STRUCTURED_POINTS :
-        stateLoading = loadStructuredPoints(datasetFormatHandle);
-        break;
-    case VTKDatasetFormat::IMAGE_DATA :
-        stateLoading = loadImageData(datasetFormatHandle);
-        break;
-    default:
-        checkErrorMsg(false, "Dataset format not implemented");
-        break;
+        case VTKDatasetFormat::UNSTRUCTURED_GRID:
+            stateLoading = loadUnstructuredGrid(datasetFormatHandle);
+            break;
+        case VTKDatasetFormat::POLYDATA:
+            stateLoading = loadPolydata(datasetFormatHandle);
+            break;
+        case VTKDatasetFormat::RECTILINEAR_GRID:
+            stateLoading = loadRectilinearGrid(datasetFormatHandle);
+            break;
+        case VTKDatasetFormat::STRUCTURED_GRID:
+            stateLoading = loadStructuredGrid(datasetFormatHandle);
+            break;
+        case VTKDatasetFormat::STRUCTURED_POINTS:
+            stateLoading = loadStructuredPoints(datasetFormatHandle);
+            break;
+        case VTKDatasetFormat::IMAGE_DATA:
+            stateLoading = loadImageData(datasetFormatHandle);
+            break;
+        default:
+            checkErrorMsg(false, "Dataset format not implemented");
+            break;
     }
     checkErrorMsg(stateLoading, "Unable to parse XML");
 
@@ -1080,14 +1131,16 @@ BaseVTKReader::BaseVTKDataIO* XMLVTKReader::loadDataArray(tinyxml2::XMLElement* 
     return loadDataArray(dataArrayElement, 0);
 }
 
-BaseVTKReader::BaseVTKDataIO* XMLVTKReader::loadDataArray(tinyxml2::XMLElement* dataArrayElement, int size)
+BaseVTKReader::BaseVTKDataIO* XMLVTKReader::loadDataArray(tinyxml2::XMLElement* dataArrayElement,
+                                                          int size)
 {
     return loadDataArray(dataArrayElement, size, "");
 }
 
-BaseVTKReader::BaseVTKDataIO* XMLVTKReader::loadDataArray(tinyxml2::XMLElement* dataArrayElement, int size, string type)
+BaseVTKReader::BaseVTKDataIO* XMLVTKReader::loadDataArray(tinyxml2::XMLElement* dataArrayElement,
+                                                          int size, string type)
 {
-    //Type
+    // Type
     const char* typeStrTemp;
     if (type.empty())
     {
@@ -1099,7 +1152,7 @@ BaseVTKReader::BaseVTKDataIO* XMLVTKReader::loadDataArray(tinyxml2::XMLElement* 
         typeStrTemp = type.c_str();
     }
 
-    //Format
+    // Format
     const char* formatStrTemp = dataArrayElement->Attribute("format");
 
     if (formatStrTemp == nullptr)
@@ -1123,14 +1176,15 @@ BaseVTKReader::BaseVTKDataIO* XMLVTKReader::loadDataArray(tinyxml2::XMLElement* 
         binary = 2;
     }
 
-    //NumberOfComponents
+    // NumberOfComponents
     int numberOfComponents;
-    if (dataArrayElement->QueryIntAttribute("NumberOfComponents", &numberOfComponents) != tinyxml2::XML_SUCCESS)
+    if (dataArrayElement->QueryIntAttribute("NumberOfComponents", &numberOfComponents) !=
+        tinyxml2::XML_SUCCESS)
     {
         numberOfComponents = 1;
     }
 
-    //Values
+    // Values
     const char* listValuesStrTemp = dataArrayElement->GetText();
 
     bool state = false;
@@ -1166,10 +1220,10 @@ BaseVTKReader::BaseVTKDataIO* XMLVTKReader::loadDataArray(tinyxml2::XMLElement* 
 
 bool XMLVTKReader::loadUnstructuredGrid(tinyxml2::XMLHandle datasetFormatHandle)
 {
-    tinyxml2::XMLElement* pieceElem = datasetFormatHandle.FirstChildElement( "Piece" ).ToElement();
+    tinyxml2::XMLElement* pieceElem = datasetFormatHandle.FirstChildElement("Piece").ToElement();
 
     checkError(pieceElem);
-    for( ; pieceElem; pieceElem = pieceElem->NextSiblingElement())
+    for (; pieceElem; pieceElem = pieceElem->NextSiblingElement())
     {
         pieceElem->QueryIntAttribute("NumberOfPoints", &numberOfPoints);
         pieceElem->QueryIntAttribute("NumberOfCells", &numberOfCells);
@@ -1178,7 +1232,7 @@ bool XMLVTKReader::loadUnstructuredGrid(tinyxml2::XMLHandle datasetFormatHandle)
         tinyxml2::XMLElement* dataArrayElement;
         tinyxml2::XMLNode* node = pieceElem->FirstChild();
 
-        for ( ; node ; node = node->NextSibling())
+        for (; node; node = node->NextSibling())
         {
             string currentNodeName = string(node->Value());
 
@@ -1189,40 +1243,42 @@ bool XMLVTKReader::loadUnstructuredGrid(tinyxml2::XMLHandle datasetFormatHandle)
                 checkError(dataArrayNode);
                 dataArrayElement = dataArrayNode->ToElement();
                 checkError(dataArrayElement);
-                //Force the points coordinates to be stocked as double
-                inputPoints = loadDataArray(dataArrayElement, numberOfPoints, "Float64");
-                checkError(inputPoints);
+                // Force the points coordinates to be stocked as double
+                m_inputPoints = loadDataArray(dataArrayElement, numberOfPoints, "Float64");
+                checkError(m_inputPoints);
             }
 
             if (currentNodeName.compare("Cells") == 0)
             {
                 /* Cells */
                 dataArrayNode = node->FirstChildElement("DataArray");
-                for ( ; dataArrayNode; dataArrayNode = dataArrayNode->NextSiblingElement( "DataArray"))
+                for (; dataArrayNode;
+                     dataArrayNode = dataArrayNode->NextSiblingElement("DataArray"))
                 {
                     dataArrayElement = dataArrayNode->ToElement();
                     checkError(dataArrayElement);
                     string currentDataArrayName = string(dataArrayElement->Attribute("Name"));
-                    ///DA - connectivity
+                    /// DA - connectivity
                     if (currentDataArrayName.compare("connectivity") == 0)
                     {
-                        //number of elements in values is not known ; have to guess it
+                        // number of elements in values is not known ; have to guess it
                         inputCells = loadDataArray(dataArrayElement, 0, "Int32");
                         checkError(inputCells);
                     }
-                    ///DA - offsets
+                    /// DA - offsets
                     if (currentDataArrayName.compare("offsets") == 0)
                     {
-                        inputCellOffsets = loadDataArray(dataArrayElement, numberOfCells, "Int32");// - 1);
-                        //const int* offsets = (inputCellOffsets == nullptr) ? nullptr : (const int*) inputCellOffsets->getData();
-                        //std::cout << "offsets: " << std::endl
-                        //    << offsets[0] << std::endl
-                        //    << offsets[1] << std::endl 
-                        //    << offsets[2]
-                        //    << std::endl;
+                        inputCellOffsets =
+                            loadDataArray(dataArrayElement, numberOfCells, "Int32");  // - 1);
+                        // const int* offsets = (inputCellOffsets == nullptr) ? nullptr : (const
+                        // int*) inputCellOffsets->getData(); std::cout << "offsets: " << std::endl
+                        //     << offsets[0] << std::endl
+                        //     << offsets[1] << std::endl
+                        //     << offsets[2]
+                        //     << std::endl;
                         checkError(inputCellOffsets);
                     }
-                    ///DA - types
+                    /// DA - types
                     if (currentDataArrayName.compare("types") == 0)
                     {
                         inputCellTypes = loadDataArray(dataArrayElement, numberOfCells, "Int32");
@@ -1234,7 +1290,8 @@ bool XMLVTKReader::loadUnstructuredGrid(tinyxml2::XMLHandle datasetFormatHandle)
             if (currentNodeName.compare("PointData") == 0)
             {
                 dataArrayNode = node->FirstChildElement("DataArray");
-                for ( ; dataArrayNode; dataArrayNode = dataArrayNode->NextSiblingElement( "DataArray"))
+                for (; dataArrayNode;
+                     dataArrayNode = dataArrayNode->NextSiblingElement("DataArray"))
                 {
                     dataArrayElement = dataArrayNode->ToElement();
                     checkError(dataArrayElement);
@@ -1250,7 +1307,8 @@ bool XMLVTKReader::loadUnstructuredGrid(tinyxml2::XMLHandle datasetFormatHandle)
             if (currentNodeName.compare("CellData") == 0)
             {
                 dataArrayNode = node->FirstChildElement("DataArray");
-                for ( ; dataArrayNode; dataArrayNode = dataArrayNode->NextSiblingElement( "DataArray"))
+                for (; dataArrayNode;
+                     dataArrayNode = dataArrayNode->NextSiblingElement("DataArray"))
                 {
                     dataArrayElement = dataArrayNode->ToElement();
                     checkError(dataArrayElement);
@@ -1270,42 +1328,43 @@ bool XMLVTKReader::loadUnstructuredGrid(tinyxml2::XMLHandle datasetFormatHandle)
 bool XMLVTKReader::loadPolydata(tinyxml2::XMLHandle datasetFormatHandle)
 {
     SOFA_UNUSED(datasetFormatHandle);
-    msg_error() << "Polydata dataset not implemented yet" ;
+    msg_error() << "Polydata dataset not implemented yet";
     return false;
 }
 
 bool XMLVTKReader::loadRectilinearGrid(tinyxml2::XMLHandle datasetFormatHandle)
 {
     SOFA_UNUSED(datasetFormatHandle);
-    msg_error() << "RectilinearGrid dataset not implemented yet" ;
+    msg_error() << "RectilinearGrid dataset not implemented yet";
     return false;
 }
 
 bool XMLVTKReader::loadStructuredGrid(tinyxml2::XMLHandle datasetFormatHandle)
 {
     SOFA_UNUSED(datasetFormatHandle);
-    msg_error() << "StructuredGrid dataset not implemented yet" ;
+    msg_error() << "StructuredGrid dataset not implemented yet";
     return false;
 }
 
 bool XMLVTKReader::loadStructuredPoints(tinyxml2::XMLHandle datasetFormatHandle)
 {
     SOFA_UNUSED(datasetFormatHandle);
-    msg_error() << "StructuredPoints dataset not implemented yet" ;
+    msg_error() << "StructuredPoints dataset not implemented yet";
     return false;
 }
 
 bool XMLVTKReader::loadImageData(tinyxml2::XMLHandle datasetFormatHandle)
 {
     SOFA_UNUSED(datasetFormatHandle);
-    msg_error() << "ImageData dataset not implemented yet" ;
+    msg_error() << "ImageData dataset not implemented yet";
     return false;
 }
 
 void registerMeshVTKLoader(sofa::core::ObjectFactory* factory)
 {
-    factory->registerObjects(core::ObjectRegistrationData("Mesh loader for the VTK/VTU file format.")
-        .add< MeshVTKLoader >());
+    factory->registerObjects(
+        core::ObjectRegistrationData("Mesh loader for the VTK/VTU file format.")
+            .add<MeshVTKLoader>());
 }
 
-} /// namespace sofa::component::io::mesh
+}  // namespace sofa::component::io::mesh

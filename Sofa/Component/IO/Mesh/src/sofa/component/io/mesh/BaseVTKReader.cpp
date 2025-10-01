@@ -1,25 +1,26 @@
 /******************************************************************************
-*                 SOFA, Simulation Open-Framework Architecture                *
-*                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
-*                                                                             *
-* This program is free software; you can redistribute it and/or modify it     *
-* under the terms of the GNU Lesser General Public License as published by    *
-* the Free Software Foundation; either version 2.1 of the License, or (at     *
-* your option) any later version.                                             *
-*                                                                             *
-* This program is distributed in the hope that it will be useful, but WITHOUT *
-* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       *
-* FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License *
-* for more details.                                                           *
-*                                                                             *
-* You should have received a copy of the GNU Lesser General Public License    *
-* along with this program. If not, see <http://www.gnu.org/licenses/>.        *
-*******************************************************************************
-* Authors: The SOFA Team and external contributors (see Authors.txt)          *
-*                                                                             *
-* Contact information: contact@sofa-framework.org                             *
-******************************************************************************/
+ *                 SOFA, Simulation Open-Framework Architecture                *
+ *                    (c) 2006 INRIA, USTL, UJF, CNRS, MGH                     *
+ *                                                                             *
+ * This program is free software; you can redistribute it and/or modify it     *
+ * under the terms of the GNU Lesser General Public License as published by    *
+ * the Free Software Foundation; either version 2.1 of the License, or (at     *
+ * your option) any later version.                                             *
+ *                                                                             *
+ * This program is distributed in the hope that it will be useful, but WITHOUT *
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or       *
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License *
+ * for more details.                                                           *
+ *                                                                             *
+ * You should have received a copy of the GNU Lesser General Public License    *
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.        *
+ *******************************************************************************
+ * Authors: The SOFA Team and external contributors (see Authors.txt)          *
+ *                                                                             *
+ * Contact information: contact@sofa-framework.org                             *
+ ******************************************************************************/
 #include <sofa/component/io/mesh/BaseVTKReader.h>
+
 #include <sofa/component/io/mesh/BaseVTKReader.inl>
 
 #if defined(WIN32)
@@ -31,15 +32,21 @@
 namespace sofa::component::io::mesh::basevtkreader
 {
 
-
-BaseVTKReader::BaseVTKReader(): inputPoints (nullptr), inputNormals (nullptr), inputPolygons(nullptr), inputCells(nullptr),
-    inputCellOffsets(nullptr), inputCellTypes(nullptr),
-    numberOfPoints(0), numberOfCells(0)
-{}
+BaseVTKReader::BaseVTKReader()
+    : m_inputPoints(nullptr),
+      inputNormals(nullptr),
+      inputPolygons(nullptr),
+      inputCells(nullptr),
+      inputCellOffsets(nullptr),
+      inputCellTypes(nullptr),
+      numberOfPoints(0),
+      numberOfCells(0)
+{
+}
 
 BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr)
 {
-    if  (!strcasecmp(typestr.c_str(), "char") || !strcasecmp(typestr.c_str(), "Int8"))
+    if (!strcasecmp(typestr.c_str(), "char") || !strcasecmp(typestr.c_str(), "Int8"))
     {
         return new VTKDataIO<char>;
     }
@@ -51,7 +58,8 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr)
     {
         return new VTKDataIO<std::int16_t>;
     }
-    else if (!strcasecmp(typestr.c_str(), "unsigned_short") || !strcasecmp(typestr.c_str(), "UInt16"))
+    else if (!strcasecmp(typestr.c_str(), "unsigned_short") ||
+             !strcasecmp(typestr.c_str(), "UInt16"))
     {
         return new VTKDataIO<std::uint16_t>;
     }
@@ -67,7 +75,8 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr)
     {
         return new VTKDataIO<std::int64_t>;
     }
-    else if (!strcasecmp(typestr.c_str(), "unsigned_long") || !strcasecmp(typestr.c_str(), "UInt64"))
+    else if (!strcasecmp(typestr.c_str(), "unsigned_long") ||
+             !strcasecmp(typestr.c_str(), "UInt64"))
     {
         return new VTKDataIO<std::uint64_t>;
     }
@@ -149,7 +158,8 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
             }
         }
 
-        if (!strcasecmp(typestr.c_str(), "unsigned_short") || !strcasecmp(typestr.c_str(), "UInt16"))
+        if (!strcasecmp(typestr.c_str(), "unsigned_short") ||
+            !strcasecmp(typestr.c_str(), "UInt16"))
         {
             switch (num)
             {
@@ -278,9 +288,6 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
     return result;
 }
 
-bool BaseVTKReader::readVTK(const char* filename)
-{
-    return readFile(filename);
-}
+bool BaseVTKReader::readVTK(const char* filename) { return readFile(filename); }
 
-} // namespace sofa::component::io::mesh::basevtkreader
+}  // namespace sofa::component::io::mesh::basevtkreader
