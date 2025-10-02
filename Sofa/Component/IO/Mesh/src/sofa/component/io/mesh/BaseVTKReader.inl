@@ -31,6 +31,12 @@ namespace sofa::component::io::mesh::basevtkreader
 using sofa::type::Vec;
 using std::istringstream;
 
+bool BaseVTKReader::isEqual(const string& a, const string& b)
+{
+    return std::equal(a.begin(), a.end(), b.begin(), b.end(),
+                      [](char a, char b) { return tolower(a) == tolower(b); });
+}
+
 template <class T>
 const void* BaseVTKReader::VTKDataIO<T>::getData()
 {

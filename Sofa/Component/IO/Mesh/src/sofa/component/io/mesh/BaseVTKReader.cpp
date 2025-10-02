@@ -21,13 +21,8 @@
  ******************************************************************************/
 #include <sofa/component/io/mesh/BaseVTKReader.h>
 
-#include <sofa/component/io/mesh/BaseVTKReader.inl>
-
-#if defined(WIN32)
-#define strcasecmp stricmp
-#endif
-
 #include <cstdint>
+#include <sofa/component/io/mesh/BaseVTKReader.inl>
 
 namespace sofa::component::io::mesh::basevtkreader
 {
@@ -46,45 +41,43 @@ BaseVTKReader::BaseVTKReader()
 
 BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr)
 {
-    if (!strcasecmp(typestr.c_str(), "char") || !strcasecmp(typestr.c_str(), "Int8"))
+    if (isEqual(typestr, "char") || isEqual(typestr, "Int8"))
     {
         return new VTKDataIO<char>;
     }
-    else if (!strcasecmp(typestr.c_str(), "unsigned_char") || !strcasecmp(typestr.c_str(), "UInt8"))
+    else if (isEqual(typestr, "unsigned_char") || isEqual(typestr, "UInt8"))
     {
         return new VTKDataIO<std::uint8_t>;
     }
-    else if (!strcasecmp(typestr.c_str(), "short") || !strcasecmp(typestr.c_str(), "Int16"))
+    else if (isEqual(typestr, "short") || isEqual(typestr, "Int16"))
     {
         return new VTKDataIO<std::int16_t>;
     }
-    else if (!strcasecmp(typestr.c_str(), "unsigned_short") ||
-             !strcasecmp(typestr.c_str(), "UInt16"))
+    else if (isEqual(typestr, "unsigned_short") || isEqual(typestr, "UInt16"))
     {
         return new VTKDataIO<std::uint16_t>;
     }
-    else if (!strcasecmp(typestr.c_str(), "int") || !strcasecmp(typestr.c_str(), "Int32"))
+    else if (isEqual(typestr, "int") || isEqual(typestr, "Int32"))
     {
         return new VTKDataIO<std::int32_t>;
     }
-    else if (!strcasecmp(typestr.c_str(), "unsigned_int") || !strcasecmp(typestr.c_str(), "UInt32"))
+    else if (isEqual(typestr, "unsigned_int") || isEqual(typestr, "UInt32"))
     {
         return new VTKDataIO<std::uint32_t>;
     }
-    else if (!strcasecmp(typestr.c_str(), "long") || !strcasecmp(typestr.c_str(), "Int64"))
+    else if (isEqual(typestr, "long") || isEqual(typestr, "Int64"))
     {
         return new VTKDataIO<std::int64_t>;
     }
-    else if (!strcasecmp(typestr.c_str(), "unsigned_long") ||
-             !strcasecmp(typestr.c_str(), "UInt64"))
+    else if (isEqual(typestr, "unsigned_long") || isEqual(typestr, "UInt64"))
     {
         return new VTKDataIO<std::uint64_t>;
     }
-    else if (!strcasecmp(typestr.c_str(), "float") || !strcasecmp(typestr.c_str(), "Float32"))
+    else if (isEqual(typestr, "float") || isEqual(typestr, "Float32"))
     {
         return new VTKDataIO<float>;
     }
-    else if (!strcasecmp(typestr.c_str(), "double") || !strcasecmp(typestr.c_str(), "Float64"))
+    else if (isEqual(typestr, "double") || isEqual(typestr, "Float64"))
     {
         return new VTKDataIO<double>;
     }
@@ -104,7 +97,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
     }
     else
     {
-        if (!strcasecmp(typestr.c_str(), "char") || !strcasecmp(typestr.c_str(), "Int8"))
+        if (isEqual(typestr, "char") || isEqual(typestr, "Int8"))
         {
             switch (num)
             {
@@ -122,7 +115,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
             }
         }
 
-        if (!strcasecmp(typestr.c_str(), "unsigned_char") || !strcasecmp(typestr.c_str(), "UInt8"))
+        if (isEqual(typestr, "unsigned_char") || isEqual(typestr, "UInt8"))
         {
             switch (num)
             {
@@ -140,7 +133,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
             }
         }
 
-        if (!strcasecmp(typestr.c_str(), "short") || !strcasecmp(typestr.c_str(), "Int16"))
+        if (isEqual(typestr, "short") || isEqual(typestr, "Int16"))
         {
             switch (num)
             {
@@ -158,8 +151,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
             }
         }
 
-        if (!strcasecmp(typestr.c_str(), "unsigned_short") ||
-            !strcasecmp(typestr.c_str(), "UInt16"))
+        if (isEqual(typestr, "unsigned_short") || isEqual(typestr, "UInt16"))
         {
             switch (num)
             {
@@ -177,7 +169,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
             }
         }
 
-        if (!strcasecmp(typestr.c_str(), "int") || !strcasecmp(typestr.c_str(), "Int32"))
+        if (isEqual(typestr, "int") || isEqual(typestr, "Int32"))
         {
             switch (num)
             {
@@ -195,7 +187,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
             }
         }
 
-        if (!strcasecmp(typestr.c_str(), "unsigned_int") || !strcasecmp(typestr.c_str(), "UInt32"))
+        if (isEqual(typestr, "unsigned_int") || isEqual(typestr, "UInt32"))
         {
             switch (num)
             {
@@ -213,7 +205,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
             }
         }
 
-        if (!strcasecmp(typestr.c_str(), "long") || !strcasecmp(typestr.c_str(), "Int64"))
+        if (isEqual(typestr, "long") || isEqual(typestr, "Int64"))
         {
             switch (num)
             {
@@ -231,7 +223,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
             }
         }
 
-        if (!strcasecmp(typestr.c_str(), "unsigned_long") || !strcasecmp(typestr.c_str(), "UInt64"))
+        if (isEqual(typestr, "unsigned_long") || isEqual(typestr, "UInt64"))
         {
             switch (num)
             {
@@ -249,7 +241,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
             }
         }
 
-        if (!strcasecmp(typestr.c_str(), "float") || !strcasecmp(typestr.c_str(), "Float32"))
+        if (isEqual(typestr, "float") || isEqual(typestr, "Float32"))
         {
             switch (num)
             {
@@ -266,7 +258,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
                     return nullptr;
             }
         }
-        if (!strcasecmp(typestr.c_str(), "double") || !strcasecmp(typestr.c_str(), "Float64"))
+        if (isEqual(typestr, "double") || isEqual(typestr, "Float64"))
         {
             switch (num)
             {

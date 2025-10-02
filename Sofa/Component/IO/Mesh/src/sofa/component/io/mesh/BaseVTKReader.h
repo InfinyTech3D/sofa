@@ -118,6 +118,9 @@ class BaseVTKReader : public BaseObject
     bool readVTK(const char* filename);
 
     virtual bool readFile(const char* filename) = 0;
+
+   private:
+    static inline bool isEqual(const string&, const string&);
 };
 
 }  // namespace sofa::component::io::mesh::basevtkreader
