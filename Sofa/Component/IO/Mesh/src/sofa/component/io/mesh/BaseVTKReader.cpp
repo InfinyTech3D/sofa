@@ -34,8 +34,12 @@ BaseVTKReader::BaseVTKReader()
       m_inputCells(nullptr),
       m_inputCellOffsets(nullptr),
       m_inputCellTypes(nullptr),
+      m_inputPointDataVector(),
+      m_inputCellDataVector(),
+      m_isLittleEndian(true),
       m_numberOfPoints(0),
-      m_numberOfCells(0)
+      m_numberOfCells(0),
+      m_numberOfLines(0)
 {
 }
 
