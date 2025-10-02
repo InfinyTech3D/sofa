@@ -45,69 +45,7 @@ BaseVTKReader::BaseVTKReader()
 
 BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr)
 {
-    if (isEqual(typestr, "char"))
-    {
-        msg_error("BaseVTKReader") << "encountered legacy type 'char', mapping to Int8 (int8_t). "
-                                      "Signedness of 'char' is platform-dependent.";
-        return new VTKDataIO<std::int8_t>;
-    }
-    else if (isEqual(typestr, "Int8"))
-    {
-        return new VTKDataIO<std::int8_t>;
-    }
-    else if (isEqual(typestr, "unsigned_char") || isEqual(typestr, "UInt8"))
-    {
-        return new VTKDataIO<std::uint8_t>;
-    }
-    else if (isEqual(typestr, "short") || isEqual(typestr, "Int16"))
-    {
-        return new VTKDataIO<std::int16_t>;
-    }
-    else if (isEqual(typestr, "unsigned_short") || isEqual(typestr, "UInt16"))
-    {
-        return new VTKDataIO<std::uint16_t>;
-    }
-    else if (isEqual(typestr, "int") || isEqual(typestr, "Int32"))
-    {
-        return new VTKDataIO<std::int32_t>;
-    }
-    else if (isEqual(typestr, "unsigned_int") || isEqual(typestr, "UInt32"))
-    {
-        return new VTKDataIO<std::uint32_t>;
-    }
-    else if (isEqual(typestr, "long"))
-    {
-        msg_error("BaseVTKReader") << "encountered legacy type 'long', mapping to Int64 (int64_t). "
-                                      "Size of 'long' is platform-dependent.";
-        return new VTKDataIO<std::int64_t>;
-    }
-    else if (isEqual(typestr, "unsigned_long"))
-    {
-        msg_error("BaseVTKReader")
-            << "encountered legacy type 'unsigned_long', mapping to UInt64 (uint64_t). "
-               "Size of 'unsigned long' is platform-dependent.";
-        return new VTKDataIO<std::uint64_t>;
-    }
-    else if (isEqual(typestr, "long_long") || isEqual(typestr, "Int64"))
-    {
-        return new VTKDataIO<std::int64_t>;
-    }
-    else if (isEqual(typestr, "unsigned_long_long") || isEqual(typestr, "UInt64"))
-    {
-        return new VTKDataIO<std::uint64_t>;
-    }
-    else if (isEqual(typestr, "float") || isEqual(typestr, "Float32"))
-    {
-        return new VTKDataIO<float>;
-    }
-    else if (isEqual(typestr, "double") || isEqual(typestr, "Float64"))
-    {
-        return new VTKDataIO<double>;
-    }
-    else
-    {
-        return nullptr;
-    }
+    return newVTKDataIO(typestr, 1);
 }
 
 BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr, int numComponents)
