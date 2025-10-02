@@ -112,251 +112,47 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr)
 
 BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr, int numComponents)
 {
-    if (numComponents == 1) return newVTKDataIO(typestr);
-
     BaseVTKDataIO* result = nullptr;
 
     if (isEqual(typestr, "char"))
     {
         msg_error("BaseVTKReader") << "encountered legacy type 'char', mapping to Int8 (int8_t). "
                                       "Signedness of 'char' is platform-dependent.";
-        switch (numComponents)
-        {
-            case 2:
-                result = new VTKDataIO<Vec<2, std::int8_t> >;
-                break;
-            case 3:
-                result = new VTKDataIO<Vec<3, std::int8_t> >;
-                break;
-            case 4:
-                result = new VTKDataIO<Vec<4, std::int8_t> >;
-                break;
-            default:
-                result = new VTKDataIO<type::vector<std::int8_t> >;
-                result->resize(numComponents);
-        }
+        result = makeDataIO<std::int8_t>(numComponents);
     }
     else if (isEqual(typestr, "Int8"))
-    {
-        switch (numComponents)
-        {
-            case 2:
-                result = new VTKDataIO<Vec<2, std::int8_t> >;
-                break;
-            case 3:
-                result = new VTKDataIO<Vec<3, std::int8_t> >;
-                break;
-            case 4:
-                result = new VTKDataIO<Vec<4, std::int8_t> >;
-                break;
-            default:
-                result = new VTKDataIO<type::vector<std::int8_t> >;
-                result->resize(numComponents);
-        }
-    }
+        result = makeDataIO<std::int8_t>(numComponents);
     else if (isEqual(typestr, "unsigned_char") || isEqual(typestr, "UInt8"))
-    {
-        switch (numComponents)
-        {
-            case 2:
-                result = new VTKDataIO<Vec<2, std::uint8_t> >;
-                break;
-            case 3:
-                result = new VTKDataIO<Vec<3, std::uint8_t> >;
-                break;
-            case 4:
-                result = new VTKDataIO<Vec<4, std::uint8_t> >;
-                break;
-            default:
-                result = new VTKDataIO<type::vector<std::uint8_t> >;
-                result->resize(numComponents);
-        }
-    }
+        result = makeDataIO<std::uint8_t>(numComponents);
     else if (isEqual(typestr, "short") || isEqual(typestr, "Int16"))
-    {
-        switch (numComponents)
-        {
-            case 2:
-                result = new VTKDataIO<Vec<2, std::int16_t> >;
-                break;
-            case 3:
-                result = new VTKDataIO<Vec<3, std::int16_t> >;
-                break;
-            case 4:
-                result = new VTKDataIO<Vec<4, std::int16_t> >;
-                break;
-            default:
-                result = new VTKDataIO<type::vector<std::int16_t> >;
-                result->resize(numComponents);
-        }
-    }
+        result = makeDataIO<std::int16_t>(numComponents);
     else if (isEqual(typestr, "unsigned_short") || isEqual(typestr, "UInt16"))
-    {
-        switch (numComponents)
-        {
-            case 2:
-                result = new VTKDataIO<Vec<2, std::uint16_t> >;
-                break;
-            case 3:
-                result = new VTKDataIO<Vec<3, std::uint16_t> >;
-                break;
-            case 4:
-                result = new VTKDataIO<Vec<4, std::uint16_t> >;
-                break;
-            default:
-                result = new VTKDataIO<type::vector<std::uint16_t> >;
-                result->resize(numComponents);
-        }
-    }
+        result = makeDataIO<std::uint16_t>(numComponents);
     else if (isEqual(typestr, "int") || isEqual(typestr, "Int32"))
-    {
-        switch (numComponents)
-        {
-            case 2:
-                result = new VTKDataIO<Vec<2, std::int32_t> >;
-                break;
-            case 3:
-                result = new VTKDataIO<Vec<3, std::int32_t> >;
-                break;
-            case 4:
-                result = new VTKDataIO<Vec<4, std::int32_t> >;
-                break;
-            default:
-                result = new VTKDataIO<type::vector<std::int32_t> >;
-                result->resize(numComponents);
-        }
-    }
+        result = makeDataIO<std::int32_t>(numComponents);
     else if (isEqual(typestr, "unsigned_int") || isEqual(typestr, "UInt32"))
-    {
-        switch (numComponents)
-        {
-            case 2:
-                result = new VTKDataIO<Vec<2, std::uint32_t> >;
-                break;
-            case 3:
-                result = new VTKDataIO<Vec<3, std::uint32_t> >;
-                break;
-            case 4:
-                result = new VTKDataIO<Vec<4, std::uint32_t> >;
-                break;
-            default:
-                result = new VTKDataIO<type::vector<std::uint32_t> >;
-                result->resize(numComponents);
-        }
-    }
+        result = makeDataIO<std::uint32_t>(numComponents);
     else if (isEqual(typestr, "long"))
     {
         msg_error("BaseVTKReader") << "encountered legacy type 'long', mapping to Int64 (int64_t). "
                                       "Size of 'long' is platform-dependent.";
-        switch (numComponents)
-        {
-            case 2:
-                result = new VTKDataIO<Vec<2, std::int64_t> >;
-                break;
-            case 3:
-                result = new VTKDataIO<Vec<3, std::int64_t> >;
-                break;
-            case 4:
-                result = new VTKDataIO<Vec<4, std::int64_t> >;
-                break;
-            default:
-                result = new VTKDataIO<type::vector<std::int64_t> >;
-                result->resize(numComponents);
-        }
+        result = makeDataIO<std::int64_t>(numComponents);
     }
     else if (isEqual(typestr, "Int64"))
-    {
-        switch (numComponents)
-        {
-            case 2:
-                result = new VTKDataIO<Vec<2, std::int64_t> >;
-                break;
-            case 3:
-                result = new VTKDataIO<Vec<3, std::int64_t> >;
-                break;
-            case 4:
-                result = new VTKDataIO<Vec<4, std::int64_t> >;
-                break;
-            default:
-                result = new VTKDataIO<type::vector<std::int64_t> >;
-                result->resize(numComponents);
-        }
-    }
+        result = makeDataIO<std::int64_t>(numComponents);
     else if (isEqual(typestr, "unsigned_long"))
     {
         msg_error("BaseVTKReader")
             << "encountered legacy type 'unsigned_long', mapping to UInt64 (uint64_t). "
                "Size of 'unsigned long' is platform-dependent.";
-        switch (numComponents)
-        {
-            case 2:
-                result = new VTKDataIO<Vec<2, std::uint64_t> >;
-                break;
-            case 3:
-                result = new VTKDataIO<Vec<3, std::uint64_t> >;
-                break;
-            case 4:
-                result = new VTKDataIO<Vec<4, std::uint64_t> >;
-                break;
-            default:
-                result = new VTKDataIO<type::vector<std::uint64_t> >;
-                result->resize(numComponents);
-        }
+        result = makeDataIO<std::uint64_t>(numComponents);
     }
     else if (isEqual(typestr, "UInt64"))
-    {
-        switch (numComponents)
-        {
-            case 2:
-                result = new VTKDataIO<Vec<2, std::uint64_t> >;
-                break;
-            case 3:
-                result = new VTKDataIO<Vec<3, std::uint64_t> >;
-                break;
-            case 4:
-                result = new VTKDataIO<Vec<4, std::uint64_t> >;
-                break;
-            default:
-                result = new VTKDataIO<type::vector<std::uint64_t> >;
-                result->resize(numComponents);
-        }
-    }
+        result = makeDataIO<std::uint64_t>(numComponents);
     else if (isEqual(typestr, "float") || isEqual(typestr, "Float32"))
-    {
-        switch (numComponents)
-        {
-            case 2:
-                result = new VTKDataIO<Vec<2, float> >;
-                break;
-            case 3:
-                result = new VTKDataIO<Vec<3, float> >;
-                break;
-            case 4:
-                result = new VTKDataIO<Vec<4, float> >;
-                break;
-            default:
-                result = new VTKDataIO<type::vector<float> >;
-                result->resize(numComponents);
-        }
-    }
+        result = makeDataIO<float>(numComponents);
     else if (isEqual(typestr, "double") || isEqual(typestr, "Float64"))
-    {
-        switch (numComponents)
-        {
-            case 2:
-                result = new VTKDataIO<Vec<2, double> >;
-                break;
-            case 3:
-                result = new VTKDataIO<Vec<3, double> >;
-                break;
-            case 4:
-                result = new VTKDataIO<Vec<4, double> >;
-                break;
-            default:
-                result = new VTKDataIO<type::vector<double> >;
-                result->resize(numComponents);
-        }
-    }
+        result = makeDataIO<double>(numComponents);
 
     if (result) result->m_nestedDataSize = numComponents;
 

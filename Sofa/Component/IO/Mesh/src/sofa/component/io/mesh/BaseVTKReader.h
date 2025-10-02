@@ -121,6 +121,9 @@ class BaseVTKReader : public BaseObject
 
    private:
     static inline bool isEqual(const string&, const string&);
+
+    template <class T>
+    BaseVTKDataIO* makeDataIO(int numComponents);
 };
 
 }  // namespace sofa::component::io::mesh::basevtkreader
@@ -130,7 +133,8 @@ namespace sofa::component::io::mesh
 /// Importing the names defined in the per-file namespace into the classical
 /// sofa namespace structure so that the classes are accessible with
 /// sofa::component::loader::BaseVTKReader instead of
-/// sofa::component::loader::basevtkreader::BaseVTKReader which is a bit longer to read and write.
+/// sofa::component::loader::basevtkreader::BaseVTKReader which is a bit longer to read and
+/// write.
 using basevtkreader::BaseVTKReader;
 using basevtkreader::VTKDatasetFormat;
 

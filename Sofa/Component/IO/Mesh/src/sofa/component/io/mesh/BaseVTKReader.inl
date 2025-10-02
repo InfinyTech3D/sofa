@@ -38,6 +38,26 @@ bool BaseVTKReader::isEqual(const string& a, const string& b)
 }
 
 template <class T>
+BaseVTKReader::BaseVTKDataIO* BaseVTKReader::makeDataIO(int numComponents)
+{
+    switch (numComponents)
+    {
+        case 1:
+            return new VTKDataIO<T>;
+        case 2:
+            return new VTKDataIO<Vec<2, T> >;
+        case 3:
+            return new VTKDataIO<Vec<3, T> >;
+        case 4:
+            return new VTKDataIO<Vec<4, T> >;
+        default:
+            auto* io = new VTKDataIO<type::vector<T> >;
+            io->resize(numComponents);
+            return io;
+    }
+}
+
+template <class T>
 const void* BaseVTKReader::VTKDataIO<T>::getData()
 {
     return m_data;
