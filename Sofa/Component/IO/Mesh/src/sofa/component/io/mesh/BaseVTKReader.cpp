@@ -54,7 +54,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
 
     if (isEqual(typestr, "char"))
     {
-        msg_error("BaseVTKReader") << "encountered legacy type 'char', mapping to Int8 (int8_t). "
+        msg_error("BaseVTKReader") << "encountered legacy type 'char', mapping to Int8 (int8_t). " 
                                       "Signedness of 'char' is platform-dependent.";
         result = makeDataIO<std::int8_t>(numComponents);
     }
@@ -91,6 +91,9 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
         result = makeDataIO<float>(numComponents);
     else if (isEqual(typestr, "double") || isEqual(typestr, "Float64"))
         result = makeDataIO<double>(numComponents);
+    else
+        msg_error("BaseVTKReader")
+            << "encountered unknown type: " << typestr << " which is currently unsupported";
 
     if (result) result->m_nestedDataSize = numComponents;
 
