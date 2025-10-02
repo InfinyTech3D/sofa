@@ -119,16 +119,17 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
         switch (numComponents)
         {
             case 2:
-                result = new VTKDataIO<Vec<2, int8_t> >;
+                result = new VTKDataIO<Vec<2, std::int8_t> >;
                 break;
             case 3:
-                result = new VTKDataIO<Vec<3, int8_t> >;
+                result = new VTKDataIO<Vec<3, std::int8_t> >;
                 break;
             case 4:
-                result = new VTKDataIO<Vec<4, int8_t> >;
+                result = new VTKDataIO<Vec<4, std::int8_t> >;
                 break;
             default:
-                return nullptr;
+                result = new VTKDataIO<type::vector<std::int8_t> >;
+                result->resize(numComponents);
         }
     }
     else if (isEqual(typestr, "Int8"))
@@ -136,16 +137,17 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
         switch (numComponents)
         {
             case 2:
-                result = new VTKDataIO<Vec<2, int8_t> >;
+                result = new VTKDataIO<Vec<2, std::int8_t> >;
                 break;
             case 3:
-                result = new VTKDataIO<Vec<3, int8_t> >;
+                result = new VTKDataIO<Vec<3, std::int8_t> >;
                 break;
             case 4:
-                result = new VTKDataIO<Vec<4, int8_t> >;
+                result = new VTKDataIO<Vec<4, std::int8_t> >;
                 break;
             default:
-                return nullptr;
+                result = new VTKDataIO<type::vector<std::int8_t> >;
+                result->resize(numComponents);
         }
     }
     else if (isEqual(typestr, "unsigned_char") || isEqual(typestr, "UInt8"))
@@ -162,7 +164,8 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
                 result = new VTKDataIO<Vec<4, std::uint8_t> >;
                 break;
             default:
-                return nullptr;
+                result = new VTKDataIO<type::vector<std::uint8_t> >;
+                result->resize(numComponents);
         }
     }
     else if (isEqual(typestr, "short") || isEqual(typestr, "Int16"))
@@ -179,7 +182,8 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
                 result = new VTKDataIO<Vec<4, std::int16_t> >;
                 break;
             default:
-                return nullptr;
+                result = new VTKDataIO<type::vector<std::int16_t> >;
+                result->resize(numComponents);
         }
     }
     else if (isEqual(typestr, "unsigned_short") || isEqual(typestr, "UInt16"))
@@ -196,7 +200,8 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
                 result = new VTKDataIO<Vec<4, std::uint16_t> >;
                 break;
             default:
-                return nullptr;
+                result = new VTKDataIO<type::vector<std::uint16_t> >;
+                result->resize(numComponents);
         }
     }
     else if (isEqual(typestr, "int") || isEqual(typestr, "Int32"))
@@ -213,7 +218,8 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
                 result = new VTKDataIO<Vec<4, std::int32_t> >;
                 break;
             default:
-                return nullptr;
+                result = new VTKDataIO<type::vector<std::int32_t> >;
+                result->resize(numComponents);
         }
     }
     else if (isEqual(typestr, "unsigned_int") || isEqual(typestr, "UInt32"))
@@ -230,7 +236,8 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
                 result = new VTKDataIO<Vec<4, std::uint32_t> >;
                 break;
             default:
-                return nullptr;
+                result = new VTKDataIO<type::vector<std::uint32_t> >;
+                result->resize(numComponents);
         }
     }
     else if (isEqual(typestr, "long"))
@@ -249,7 +256,8 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
                 result = new VTKDataIO<Vec<4, std::int64_t> >;
                 break;
             default:
-                return nullptr;
+                result = new VTKDataIO<type::vector<std::int64_t> >;
+                result->resize(numComponents);
         }
     }
     else if (isEqual(typestr, "Int64"))
@@ -266,10 +274,11 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
                 result = new VTKDataIO<Vec<4, std::int64_t> >;
                 break;
             default:
-                return nullptr;
+                result = new VTKDataIO<type::vector<std::int64_t> >;
+                result->resize(numComponents);
         }
     }
-    else if (isEqual(typestr, "unsigned_long")) 
+    else if (isEqual(typestr, "unsigned_long"))
     {
         msg_error("BaseVTKReader")
             << "encountered legacy type 'unsigned_long', mapping to UInt64 (uint64_t). "
@@ -286,7 +295,8 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
                 result = new VTKDataIO<Vec<4, std::uint64_t> >;
                 break;
             default:
-                return nullptr;
+                result = new VTKDataIO<type::vector<std::uint64_t> >;
+                result->resize(numComponents);
         }
     }
     else if (isEqual(typestr, "UInt64"))
@@ -303,7 +313,8 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
                 result = new VTKDataIO<Vec<4, std::uint64_t> >;
                 break;
             default:
-                return nullptr;
+                result = new VTKDataIO<type::vector<std::uint64_t> >;
+                result->resize(numComponents);
         }
     }
     else if (isEqual(typestr, "float") || isEqual(typestr, "Float32"))
@@ -320,7 +331,8 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
                 result = new VTKDataIO<Vec<4, float> >;
                 break;
             default:
-                return nullptr;
+                result = new VTKDataIO<type::vector<float> >;
+                result->resize(numComponents);
         }
     }
     else if (isEqual(typestr, "double") || isEqual(typestr, "Float64"))
@@ -337,7 +349,8 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
                 result = new VTKDataIO<Vec<4, double> >;
                 break;
             default:
-                return nullptr;
+                result = new VTKDataIO<type::vector<double> >;
+                result->resize(numComponents);
         }
     }
     result->m_nestedDataSize = numComponents;
