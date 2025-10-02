@@ -54,8 +54,8 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
 
     if (isEqual(typestr, "char"))
     {
-        msg_error("BaseVTKReader") << "encountered legacy type 'char', mapping to Int8 (int8_t). " 
-                                      "Signedness of 'char' is platform-dependent.";
+        msg_warning("BaseVTKReader") << "encountered legacy type 'char', mapping to Int8 (int8_t). "
+                                        "Signedness of 'char' is platform-dependent.";
         result = makeDataIO<std::int8_t>(numComponents);
     }
     else if (isEqual(typestr, "Int8"))
@@ -72,17 +72,17 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
         result = makeDataIO<std::uint32_t>(numComponents);
     else if (isEqual(typestr, "long"))
     {
-        msg_error("BaseVTKReader") << "encountered legacy type 'long', mapping to Int64 (int64_t). "
-                                      "Size of 'long' is platform-dependent.";
+        msg_warning("BaseVTKReader") << "encountered legacy type 'long', mapping to Int64 "
+                                        "(int64_t). Size of 'long' is platform-dependent.";
         result = makeDataIO<std::int64_t>(numComponents);
     }
     else if (isEqual(typestr, "Int64"))
         result = makeDataIO<std::int64_t>(numComponents);
     else if (isEqual(typestr, "unsigned_long"))
     {
-        msg_error("BaseVTKReader")
-            << "encountered legacy type 'unsigned_long', mapping to UInt64 (uint64_t). "
-               "Size of 'unsigned long' is platform-dependent.";
+        msg_warning("BaseVTKReader")
+            << "encountered legacy type 'unsigned_long', mapping to UInt64 (uint64_t). Size of "
+               "'unsigned long' is platform-dependent.";
         result = makeDataIO<std::uint64_t>(numComponents);
     }
     else if (isEqual(typestr, "UInt64"))
