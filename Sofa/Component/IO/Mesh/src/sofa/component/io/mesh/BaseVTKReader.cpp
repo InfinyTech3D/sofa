@@ -106,11 +106,11 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr)
     }
 }
 
-BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr, int num)
+BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr, int numComponents)
 {
     BaseVTKDataIO* result = nullptr;
 
-    if (num == 1)
+    if (numComponents == 1)
     {
         result = newVTKDataIO(typestr);
     }
@@ -118,7 +118,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
     {
         if (isEqual(typestr, "char") || isEqual(typestr, "Int8"))
         {
-            switch (num)
+            switch (numComponents)
             {
                 case 2:
                     result = new VTKDataIO<Vec<2, char> >;
@@ -136,7 +136,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
 
         if (isEqual(typestr, "unsigned_char") || isEqual(typestr, "UInt8"))
         {
-            switch (num)
+            switch (numComponents)
             {
                 case 2:
                     result = new VTKDataIO<Vec<2, std::uint8_t> >;
@@ -154,7 +154,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
 
         if (isEqual(typestr, "short") || isEqual(typestr, "Int16"))
         {
-            switch (num)
+            switch (numComponents)
             {
                 case 2:
                     result = new VTKDataIO<Vec<2, std::int16_t> >;
@@ -172,7 +172,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
 
         if (isEqual(typestr, "unsigned_short") || isEqual(typestr, "UInt16"))
         {
-            switch (num)
+            switch (numComponents)
             {
                 case 2:
                     result = new VTKDataIO<Vec<2, std::uint16_t> >;
@@ -190,7 +190,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
 
         if (isEqual(typestr, "int") || isEqual(typestr, "Int32"))
         {
-            switch (num)
+            switch (numComponents)
             {
                 case 2:
                     result = new VTKDataIO<Vec<2, std::int32_t> >;
@@ -208,7 +208,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
 
         if (isEqual(typestr, "unsigned_int") || isEqual(typestr, "UInt32"))
         {
-            switch (num)
+            switch (numComponents)
             {
                 case 2:
                     result = new VTKDataIO<Vec<2, std::uint32_t> >;
@@ -226,7 +226,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
 
         if (isEqual(typestr, "long") || isEqual(typestr, "Int64"))
         {
-            switch (num)
+            switch (numComponents)
             {
                 case 2:
                     result = new VTKDataIO<Vec<2, std::int64_t> >;
@@ -244,7 +244,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
 
         if (isEqual(typestr, "unsigned_long") || isEqual(typestr, "UInt64"))
         {
-            switch (num)
+            switch (numComponents)
             {
                 case 2:
                     result = new VTKDataIO<Vec<2, std::uint64_t> >;
@@ -262,7 +262,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
 
         if (isEqual(typestr, "float") || isEqual(typestr, "Float32"))
         {
-            switch (num)
+            switch (numComponents)
             {
                 case 2:
                     result = new VTKDataIO<Vec<2, float> >;
@@ -279,7 +279,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
         }
         if (isEqual(typestr, "double") || isEqual(typestr, "Float64"))
         {
-            switch (num)
+            switch (numComponents)
             {
                 case 2:
                     result = new VTKDataIO<Vec<2, double> >;
@@ -295,7 +295,7 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
             }
         }
     }
-    result->m_nestedDataSize = num;
+    result->m_nestedDataSize = numComponents;
     return result;
 }
 

@@ -98,8 +98,8 @@ class BaseVTKReader : public BaseObject
         BaseData* createSofaData() override;
     };
 
-    BaseVTKDataIO* newVTKDataIO(const string& typestr);
-    BaseVTKDataIO* newVTKDataIO(const string& typestr, int num);
+    BaseVTKDataIO* newVTKDataIO(const string&);
+    BaseVTKDataIO* newVTKDataIO(const string&, int);
 
     BaseVTKDataIO* m_inputPoints;
     BaseVTKDataIO* m_inputNormals;
