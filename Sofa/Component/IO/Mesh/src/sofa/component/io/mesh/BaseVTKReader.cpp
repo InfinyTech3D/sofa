@@ -353,7 +353,9 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
                 result->resize(numComponents);
         }
     }
-    result->m_nestedDataSize = numComponents;
+
+    if (result) result->m_nestedDataSize = numComponents;
+
     return result;
 }
 
