@@ -34,7 +34,11 @@ using std::istringstream;
 bool BaseVTKReader::isEqual(const string& a, const string& b)
 {
     return std::equal(a.begin(), a.end(), b.begin(), b.end(),
-                      [](char a, char b) { return tolower(a) == tolower(b); });
+                      [](char ac, char bc)
+                      {
+                          return std::tolower(static_cast<unsigned char>(ac)) ==
+                                 std::tolower(static_cast<unsigned char>(bc));
+                      });
 }
 
 template <class T>
