@@ -43,11 +43,6 @@ BaseVTKReader::BaseVTKReader()
 {
 }
 
-BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr)
-{
-    return newVTKDataIO(typestr, 1);
-}
-
 BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr, int numComponents)
 {
     BaseVTKDataIO* result = nullptr;
@@ -58,26 +53,35 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
                                         "Signedness of 'char' is platform-dependent.";
         result = makeDataIO<std::int8_t>(numComponents);
     }
+
     else if (isEqual(typestr, "Int8"))
         result = makeDataIO<std::int8_t>(numComponents);
+
     else if (isEqual(typestr, "unsigned_char") || isEqual(typestr, "UInt8"))
         result = makeDataIO<std::uint8_t>(numComponents);
+
     else if (isEqual(typestr, "short") || isEqual(typestr, "Int16"))
         result = makeDataIO<std::int16_t>(numComponents);
+
     else if (isEqual(typestr, "unsigned_short") || isEqual(typestr, "UInt16"))
         result = makeDataIO<std::uint16_t>(numComponents);
+    
     else if (isEqual(typestr, "int") || isEqual(typestr, "Int32"))
         result = makeDataIO<std::int32_t>(numComponents);
+
     else if (isEqual(typestr, "unsigned_int") || isEqual(typestr, "UInt32"))
         result = makeDataIO<std::uint32_t>(numComponents);
+
     else if (isEqual(typestr, "long"))
     {
         msg_warning("BaseVTKReader") << "encountered legacy type 'long', mapping to Int64 "
                                         "(int64_t). Size of 'long' is platform-dependent.";
         result = makeDataIO<std::int64_t>(numComponents);
     }
+
     else if (isEqual(typestr, "Int64"))
         result = makeDataIO<std::int64_t>(numComponents);
+
     else if (isEqual(typestr, "unsigned_long"))
     {
         msg_warning("BaseVTKReader")
@@ -85,12 +89,16 @@ BaseVTKReader::BaseVTKDataIO* BaseVTKReader::newVTKDataIO(const string& typestr,
                "'unsigned long' is platform-dependent.";
         result = makeDataIO<std::uint64_t>(numComponents);
     }
+
     else if (isEqual(typestr, "UInt64"))
         result = makeDataIO<std::uint64_t>(numComponents);
+
     else if (isEqual(typestr, "float") || isEqual(typestr, "Float32"))
         result = makeDataIO<float>(numComponents);
+
     else if (isEqual(typestr, "double") || isEqual(typestr, "Float64"))
         result = makeDataIO<double>(numComponents);
+
     else
         msg_error("BaseVTKReader")
             << "encountered unknown type: " << typestr << " which is currently unsupported";
