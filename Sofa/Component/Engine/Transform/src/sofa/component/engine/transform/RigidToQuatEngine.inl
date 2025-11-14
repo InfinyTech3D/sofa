@@ -27,7 +27,8 @@ namespace sofa::component::engine::transform
 {
 template <class DataTypes>
 RigidToQuatEngine<DataTypes>::RigidToQuatEngine()
-    : f_positions( initData (&f_positions, "positions", "Positions (Vector of 3)") )
+    : f_positions( initData (&f_positions, "positions", "Positions (Vector of 3)") ),
+      f_rotation(initData(&f_rotation, "rotation", "Input additional rotation (Quaternion)"))
     , f_orientations( initData (&f_orientations, "orientations", "Orientations (Quaternion)") )
     , f_orientationsEuler( initData (&f_orientationsEuler, "orientationsEuler", "Orientations (Euler angle)") )
     , f_rigids( initData (&f_rigids, "rigids", "Rigid (Position + Orientation)") )
@@ -70,6 +71,8 @@ void RigidToQuatEngine<DataTypes>::doUpdate()
     helper::WriteOnlyAccessor< Data< type::vector<Quat> > > orientations = f_orientations;
     helper::WriteOnlyAccessor< Data< type::vector<Vec3> > > orientationsEuler = f_orientationsEuler;
 
+    const Quat& additionalRotation = f_rotation.getValue();
+
     unsigned int sizeRigids = rigids.size();
     positions.resize(sizeRigids);
     orientations.resize(sizeRigids);
@@ -78,7 +81,7 @@ void RigidToQuatEngine<DataTypes>::doUpdate()
     {
         RigidVec3 r = rigids[i];
         positions[i] = r.getCenter();
-        orientations[i] = r.getOrientation();
+        orientations[i] = r.getOrientation() * additionalRotation;
         orientationsEuler[i] = orientations[i].toEulerVector();
     }
 }

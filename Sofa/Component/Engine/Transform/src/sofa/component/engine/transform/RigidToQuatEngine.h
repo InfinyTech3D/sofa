@@ -56,6 +56,7 @@ public:
     void reinit() override;
 
     Data<type::vector<Vec3 > > f_positions; ///< Positions (Vector of 3)
+    Data<Quat> f_rotation;                         ///< input additionnal rotation (Quaternion)
     Data<type::vector<Quat> > f_orientations; ///< Orientations (Quaternion)
     Data<type::vector<Vec3> > f_orientationsEuler; ///< Orientations (Euler angle)
     Data<type::vector<RigidVec3> > f_rigids; ///< Rigid (Position + Orientation)
