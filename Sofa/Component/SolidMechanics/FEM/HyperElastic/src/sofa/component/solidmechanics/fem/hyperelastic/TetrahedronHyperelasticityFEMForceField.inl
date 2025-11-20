@@ -65,7 +65,8 @@ template <class DataTypes> TetrahedronHyperelasticityFEMForceField<DataTypes>::T
     , d_materialName(initData(&d_materialName, materialOptions<DataTypes>, "materialName","the name of the material to be used. Possible options are: 'ArrudaBoyce', 'Costa', 'MooneyRivlin', 'NeoHookean', 'Ogden', 'StVenantKirchhoff', 'VerondaWestman', 'StableNeoHookean'"))
     , d_parameterSet(initData(&d_parameterSet,"ParameterSet","The global parameters specifying the material"))
     , d_anisotropySet(initData(&d_anisotropySet,"AnisotropyDirections","The global directions of anisotropy of the material: vector containing anisotropic directions. The vector size is 0 if the material is isotropic, 1 if it is transversely isotropic and 2 for orthotropic materials"))
-    , d_initialFiberDirections(initData(&d_initialFiberDirections, "initialFiberDirections", "Initial fiber directions for visualization"))
+    , d_initialFiberDirectionsA(initData(&d_initialFiberDirectionsA, "initialFiberDirectionsA", "Initial fiber directions for visualization"))
+    , d_initialFiberDirectionsD(initData(&d_initialFiberDirectionsD, "initialFiberDirectionsD", "Initial fiber directions for visualization"))
     , d_drawFibers(initData(&d_drawFibers, false, "drawFibers", "Draw fibers or not"))
     , d_drawFiberScale(initData(&d_drawFiberScale, 1.0_sreal, "drawFiberScale", "Scale factor for drawing fibers"))
     , m_tetrahedronInfo(initData(&m_tetrahedronInfo, "tetrahedronInfo", "Internal tetrahedron data"))
@@ -757,27 +758,37 @@ void TetrahedronHyperelasticityFEMForceField<DataTypes>::draw(const core::visual
         const VecCoord& x = this->mstate->read(core::vec_id::read_access::position)->getValue();
         const type::vector<Tetrahedron>& tetrahedra = m_topology->getTetrahedra();
         const sofa::Size nbTetrahedra = m_topology->getNbTetrahedra();
-        auto fibers = sofa::helper::getReadAccessor(d_initialFiberDirections);
+        auto fibersA = sofa::helper::getReadAccessor(d_initialFiberDirectionsA);
+        auto fibersD = sofa::helper::getReadAccessor(d_initialFiberDirectionsD);
+
         const SReal scale = d_drawFiberScale.getValue();
 
+        std::vector<Vec3> verticesA;
+        std::vector<Vec3> verticesD;
         for (sofa::Size i = 0; i < nbTetrahedra; ++i)
         {
             const Tetrahedron& t = tetrahedra[i];
             const auto center = (x[t[0]] + x[t[1]] + x[t[2]] + x[t[3]]) * 0.25;
             const auto& tetInfo = tetrahedronInf[i];
-            //const auto fiberDir = tetInfo.m_fiberDirection;  // todo: check if normalized
-            auto fiberDir = fibers[i];  // use initial fiber direction for visualization]
-            // const auto deformedFiberDir = tetInfo.m_deformationTensor * fiberDir;  // copilot
-            // extrapolation!! const auto fiberLength = deformedFiberDir.norm();
-            //fiberDir.normalize();
-            const auto fiberEnd = center + fiberDir*scale;
+
+            auto fiberDirA = fibersA[i];  // use initial fiber direction for visualization]
+            auto fiberDirD = fibersD[i];
+            const auto fiberEndA = center + fiberDirA * scale;
+            const auto fiberEndD = center + fiberDirD * scale;
             
-            const float norm = static_cast<float>((center - fiberEnd).norm());
-            type::Vec3 p1 = type::Vec3(center[0], center[1], center[2]);
-            type::Vec3 p2 = type::Vec3(fiberEnd[0], fiberEnd[1], fiberEnd[2]);
-            //vparams->drawTool()->drawArrow(p2, p1, scale / 20.0f, RGBAColor::gold());
-            vparams->drawTool()->drawLine(p1, p2, RGBAColor::green());
+            verticesA.push_back(Vec3(center[0], center[1], center[2]));
+            verticesA.push_back(Vec3(fiberEndA[0], fiberEndA[1], fiberEndA[2]));
+
+            verticesD.push_back(Vec3(center[0], center[1], center[2]));
+            verticesD.push_back(Vec3(fiberEndD[0], fiberEndD[1], fiberEndD[2]));
+
+            //vparams->drawTool()->drawArrow(p2, p1, scale / 20.0f, RGBAColor::gold());            
         }
+
+        sofa::type::RGBAColor colorA4(1.0f, 0.0, 0.0f, 1.0);
+        sofa::type::RGBAColor colorD4(0.0f, 0.0, 1.0f, 1.0);
+        vparams->drawTool()->drawLines(verticesA, 1, colorA4);
+        vparams->drawTool()->drawLines(verticesD, 1, colorD4);
     }
 
     if (!vparams->displayFlags().getShowForceFields()) return;
