@@ -202,7 +202,7 @@ void Edge2QuadTopologicalMapping::init()
                         } else {
                             x = t + (Y*cos((SReal) (2.0*j*M_PI/N)) + Z*sin((SReal) (2.0*j*M_PI/N)))*((SReal) rho);
                         }
-                        to_x[p0*N+j] = x;
+                        to_x[p0 * N + j] = x * rho;
                     }
                 }
             }
