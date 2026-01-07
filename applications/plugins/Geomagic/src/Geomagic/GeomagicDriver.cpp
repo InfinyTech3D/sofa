@@ -69,11 +69,6 @@ HDCallbackCode HDCALLBACK copyDeviceDataCallback(void * pUserData)
 // Callback method to get the tool position and angles and compute the Force to apply to the tool
 HDCallbackCode HDCALLBACK stateCallback(void * userData)
 {
-    using clock = std::chrono::high_resolution_clock;
-    static auto last_time = clock::now();
-    static auto last_print = clock::now();
-    static int counter = 0;
-
     HDErrorInfo error;
     GeomagicDriver * driver = (GeomagicDriver * ) userData;
 
@@ -155,20 +150,20 @@ HDCallbackCode HDCALLBACK stateCallback(void * userData)
     hdEndFrame(driver->m_hHD);
 
     // Measure period
-    auto now = clock::now();
-    double dt_us = std::chrono::duration<double, std::micro>(now - last_time).count();
-    last_time = now;
-
-    counter++;
-
-    // Print averaged frequency every ~1000 loops
-    if (counter >= 1000)
+    if (driver->m_logThreadSpeed)
     {
-        double elapsed_ms = std::chrono::duration<double, std::milli>(now - last_print).count();
-        double avg_freq = counter / (elapsed_ms / 1000.0);
-        std::cout << "[HapticsHandling] avg freq: " << avg_freq << " Hz" << std::endl;
-        last_print = now;
-        counter = 0;
+        counter++;
+
+        // Print averaged frequency every ~1000 loops
+        if (counter >= 1000)
+        {
+            auto now = std::chrono::high_resolution_clock::now();
+            double elapsed_ms = std::chrono::duration<double, std::milli>(now - last_time).count();
+            double avg_freq = counter / (elapsed_ms / 1000.0);
+            msg_info(driver) << "[HapticsLoop] avg freq: " << avg_freq << " Hz";
+            last_time = now;
+            counter = 0;
+        }
     }
 
     // Measure period
