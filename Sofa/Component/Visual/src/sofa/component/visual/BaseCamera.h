@@ -260,7 +260,7 @@ protected:
     type::Vec3 getSceneCenter() const;
     SReal getSceneRadius() const;
 
-    bool b_setDefaultParameters;
+    bool b_setCustomParameters;
 
     //need to keep "internal" lookAt and distance for updating Data
     //better way to do that ?

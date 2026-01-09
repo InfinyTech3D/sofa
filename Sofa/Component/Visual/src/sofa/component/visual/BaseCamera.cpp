@@ -60,8 +60,8 @@ BaseCamera::BaseCamera()
     , d_activated(initData(&d_activated, true , "activated", "Camera activated ?"))
     , d_fixedLookAtPoint(initData(&d_fixedLookAtPoint, false, "fixedLookAt", "keep the lookAt point always fixed"))
     , d_modelViewMatrix(initData(&d_modelViewMatrix, "modelViewMatrix", "ModelView Matrix"))
-    , d_projectionMatrix(initData(&d_projectionMatrix, "projectionMatrix", "Projection Matrix"))
-    , b_setDefaultParameters(false)
+    , d_projectionMatrix(initData(&d_projectionMatrix, "projectionMatrix", "Projection Matrix")),
+      b_setCustomParameters(false)
 {
     this->f_listening.setValue(true);
     this->d_projectionMatrix.setReadOnly(true);
@@ -108,6 +108,8 @@ void BaseCamera::init()
 {
     if(d_position.isSet())
     {
+        b_setCustomParameters = true;
+
         if (!d_orientation.isSet() && d_lookAt.isSet())
         {
             d_distance.setValue((d_lookAt.getValue() - d_position.getValue()).norm());
@@ -127,7 +129,7 @@ void BaseCamera::init()
         else if (!d_lookAt.isSet() && !d_orientation.isSet())
         {
             msg_warning() << "Too many missing parameters: If camera position is set, please also specify the orientation and lookAt value (or at least one of the two). Will use default values." ;
-            b_setDefaultParameters = true;
+            b_setCustomParameters = false;
         }
     }
     else
@@ -140,11 +142,12 @@ void BaseCamera::init()
 
             const type::Vec3 pos = getPositionFromOrientation(d_lookAt.getValue(), d_distance.getValue(), d_orientation.getValue());
             d_position.setValue(pos);
+            b_setCustomParameters = true;
         }
         else
         {
             msg_warning() << "Too many missing parameters: If camera position is not set, please specify at least the lookAt and orientation to compute the position. Will use default values." ;
-            b_setDefaultParameters = true;
+            b_setCustomParameters = false;
         }
     }
     currentDistance = d_distance.getValue();
@@ -716,7 +719,7 @@ void BaseCamera::fitSphere(const type::Vec3 &center, SReal radius)
 
 void BaseCamera::fitBoundingBox(const type::Vec3 &min, const type::Vec3 &max)
 {
-    if (!b_setDefaultParameters) 
+    if (b_setCustomParameters) 
         return;
     
     SReal diameter = std::max(fabs(max[1]-min[1]), fabs(max[0]-min[0]));
@@ -738,7 +741,7 @@ void BaseCamera::setDefaultView(const type::Vec3 & gravity)
 {
     const auto sceneCenter = getSceneCenter();
 
-    if (b_setDefaultParameters)
+    if (!b_setCustomParameters)
     {
         //LookAt
         d_lookAt.setValue(sceneCenter);
