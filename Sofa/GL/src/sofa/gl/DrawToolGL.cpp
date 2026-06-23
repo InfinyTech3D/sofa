@@ -1187,8 +1187,10 @@ void DrawToolGL::drawEllipsoid(const Vec3 &p, const Vec3 &radii)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void DrawToolGL::drawBoundingBox( const Vec3 &min, const Vec3 &max, float size)
+void DrawToolGL::drawBoundingBox( const Vec3 &min, const Vec3 &max, float size, const type::RGBAColor &color)
 {
+    setMaterial(color);
+    glPushMatrix();
     glLineWidth(size);
     glBegin( GL_LINES );
 
@@ -1231,6 +1233,8 @@ void DrawToolGL::drawBoundingBox( const Vec3 &min, const Vec3 &max, float size)
 
     glEnd();
     glLineWidth(1.0);
+    glPopMatrix();
+    resetMaterial(color);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

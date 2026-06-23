@@ -167,7 +167,7 @@ public:
     virtual void drawSphere(const Vec3 &p, float radius, const RGBAColor& color) = 0;
     virtual void drawEllipsoid(const Vec3 &p, const Vec3 &radii) = 0;
 
-    virtual void drawBoundingBox( const Vec3 &min, const Vec3 &max, float size = 1.0 ) = 0;
+    virtual void drawBoundingBox( const Vec3 &min, const Vec3 &max, float size = 1.0, const type::RGBAColor &color = RGBAColor::yellow() ) = 0;
 
     virtual void draw3DText(const Vec3 &p, float scale, const RGBAColor &color, const char* text) = 0;
     virtual void draw3DText_Indices(const std::vector<Vec3> &positions, float scale, const RGBAColor &color) = 0;

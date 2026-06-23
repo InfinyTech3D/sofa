@@ -146,7 +146,7 @@ public:
     void drawSphere(const type::Vec3 &p, float radius, const type::RGBAColor &color) override;
     void drawEllipsoid(const type::Vec3 &p, const type::Vec3 &radii) override;
 
-    void drawBoundingBox( const type::Vec3 &min, const type::Vec3 &max, float size = 1.0) override;
+    void drawBoundingBox( const type::Vec3 &min, const type::Vec3 &max, float size = 1.0, const type::RGBAColor &color = RGBAColor::yellow()) override;
 
     void draw3DText(const type::Vec3 &p, float scale, const type::RGBAColor &color, const char* text) override;
 
