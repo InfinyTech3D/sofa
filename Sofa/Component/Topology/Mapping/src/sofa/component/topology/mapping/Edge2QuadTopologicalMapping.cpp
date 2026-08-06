@@ -165,14 +165,15 @@ void Edge2QuadTopologicalMapping::init()
                 Z0[0] = (SReal) (0.0); Z0[1] = (SReal) (0.0); Z0[2] = (SReal) (1.0);
             }
 
+            sofa::Index nbPoints = fromModel->getNbPoints() * N;
             if (to_mstate)
             {
-                to_mstate->resize(fromModel->getNbPoints() * N);
+                to_mstate->resize(nbPoints);
             }
 
             l_toQuadContainer->clear();
 
-            toModel->setNbPoints(fromModel->getNbPoints() * N);
+            toModel->setNbPoints(nbPoints);
 
             if (to_mstate)
             {
@@ -278,6 +279,49 @@ void Edge2QuadTopologicalMapping::init()
                 }
 
             }
+
+            // Add quads at end:
+            sofa::Index lastIndex = nbPoints - 1;
+            sofa::Index firstIndex = nbPoints - N;
+            auto nb_elems = toModel->getNbQuads();
+            quads_to_create.emplace_back(firstIndex, firstIndex + 1, firstIndex + 2, lastIndex);
+            quadsIndexList.push_back(nb_elems);
+            nb_elems++;
+
+            quads_to_create.emplace_back(firstIndex + 2, firstIndex + 3, lastIndex - 1, lastIndex);
+            quadsIndexList.push_back(nb_elems);
+            nb_elems++;
+
+            quads_to_create.emplace_back(firstIndex + 3, firstIndex + 4, lastIndex - 2, lastIndex-1);
+            quadsIndexList.push_back(nb_elems);
+            nb_elems++;
+
+            quads_to_create.emplace_back(firstIndex + 4, firstIndex + 5, lastIndex - 3,
+                                         lastIndex - 2);
+            quadsIndexList.push_back(nb_elems);
+            nb_elems++;
+
+            // Add quads at start:
+            lastIndex = N - 1;
+            firstIndex = 0;
+            quads_to_create.emplace_back(firstIndex, lastIndex, firstIndex + 2, firstIndex + 1);
+            quadsIndexList.push_back(nb_elems);
+            nb_elems++;
+
+            quads_to_create.emplace_back(firstIndex + 2, lastIndex, lastIndex -1, firstIndex + 3);
+            quadsIndexList.push_back(nb_elems);
+            nb_elems++;
+
+            quads_to_create.emplace_back(firstIndex + 3, lastIndex - 1, lastIndex - 2,
+                                         firstIndex + 4);
+            quadsIndexList.push_back(nb_elems);
+            nb_elems++;
+
+            quads_to_create.emplace_back(firstIndex + 4, lastIndex - 2, lastIndex - 3,
+                                         firstIndex + 5);
+            quadsIndexList.push_back(nb_elems);
+            nb_elems++;
+
 
             l_toQuadModifier->addQuads(quads_to_create);
 
