@@ -191,6 +191,13 @@ void Node::parse( sofa::core::objectmodel::BaseObjectDescription* arg )
         objDesc.setAttribute("displayFlags", oldFlags);
         sofa::core::objectmodel::BaseComponent::SPtr obj = sofa::core::ObjectFactory::CreateObject(this, &objDesc);
     }
+    
+    // BoundingBox state management
+    const char* bboxAttrStr = arg->getAttribute("bbox", nullptr);
+    if(bboxAttrStr != nullptr)
+    {
+        this->m_bboxIsFixed = true;
+    }
 }
 
 /// Initialize the components of this node and all the nodes which depend on it.
@@ -647,7 +654,7 @@ bool Node::doRemoveObject(sofa::core::objectmodel::BaseComponent::SPtr sobj)
     dmsg_warning_when(sobj == nullptr) << "Trying to remove a nullptr object";
 
     this->clearObjectContext(sobj);
-    object.remove(sobj);
+    object.remove(sobj.get());
     sofa::core::objectmodel::BaseComponent* obj = sobj.get();
 
     if(obj != nullptr && !obj->removeInNode( this ) )
@@ -1185,7 +1192,7 @@ void Node::doRemoveChild(BaseNode::SPtr node)
 {
     const Node::SPtr dagnode = sofa::core::objectmodel::SPtr_static_cast<Node>(node);
     setDirtyDescendancy();
-    child.remove(dagnode);
+    child.remove(dagnode.get());
     dagnode->l_parents.remove(this);
 }
 
