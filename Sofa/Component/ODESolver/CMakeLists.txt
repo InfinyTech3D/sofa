@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.22)
 project(Sofa.Component.ODESolver LANGUAGES CXX)
 
-set(SOFACOMPONENTODESOLVER_SOURCE_DIR "src/sofa/component/odesolver")
+set(SOFACOMPONENTODESOLVER_SOURCE_DIR "compat/sofa/component/odesolver")
 
 sofa_add_subdirectory_modules(SOFACOMPONENTODESOLVER_TARGETS
-    DIRECTORIES Forward Backward
+        DIRECTORIES Forward Backward
 )
 
 set(HEADER_FILES
@@ -16,17 +16,15 @@ set(SOURCE_FILES
     ${SOFACOMPONENTODESOLVER_SOURCE_DIR}/init.cpp
 )
 
+sofa_find_package(Sofa.Component.IntegrationScheme REQUIRED)
+
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} PUBLIC ${SOFACOMPONENTODESOLVER_TARGETS})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${SOFACOMPONENTODESOLVER_TARGETS} Sofa.Component.IntegrationScheme)
 
 sofa_create_package_with_targets(
     PACKAGE_NAME ${PROJECT_NAME}
     PACKAGE_VERSION ${Sofa_VERSION}
     TARGETS ${PROJECT_NAME} AUTO_SET_TARGET_PROPERTIES
-    INCLUDE_SOURCE_DIR "src"
+    INCLUDE_SOURCE_DIR "compat"
     INCLUDE_INSTALL_DIR "${PROJECT_NAME}"
 )
-
-if(SOFA_BUILD_TESTS)
-    add_subdirectory(Testing)
-endif()

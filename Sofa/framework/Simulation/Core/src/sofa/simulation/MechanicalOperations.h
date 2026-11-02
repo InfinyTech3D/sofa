@@ -52,14 +52,19 @@ public:
 /// @{
 
     /// Propagate the given displacement through all mappings
+    SOFA_ATTRIBUTE_DEPRECATED__MECHANICALOPERATIONS_PROPAGATE_DX()
     void propagateDx(core::MultiVecDerivId dx, bool ignore_flag = false);
     /// Propagate the given displacement through all mappings and reset the current force delta
+    SOFA_ATTRIBUTE_DEPRECATED__MECHANICALOPERATIONS_PROPAGATE_DX()
     void propagateDxAndResetDf(core::MultiVecDerivId dx, core::MultiVecDerivId df);
     /// Propagate the given position through all mappings
+    SOFA_ATTRIBUTE_DEPRECATED__MECHANICALOPERATIONS_PROPAGATE_X()
     void propagateX(core::MultiVecCoordId x);
     /// Propagate the given velocity through all mappings
+    SOFA_ATTRIBUTE_DEPRECATED__MECHANICALOPERATIONS_PROPAGATE_V()
     void propagateV(core::MultiVecDerivId v);
     /// Propagate the given position and velocity through all mappings
+    SOFA_ATTRIBUTE_DEPRECATED__MECHANICALOPERATIONS_PROPAGATE_X_AND_V()
     void propagateXAndV(core::MultiVecCoordId x, core::MultiVecDerivId v);
     /// Propagate the given position through all mappings and reset the current force delta
     SOFA_ATTRIBUTE_DEPRECATED__MECHANICALOPERATIONS_PROPAGATEXANDRESETF()
@@ -77,8 +82,13 @@ public:
     void integrateVelocity(core::MultiVecDerivId res, core::ConstMultiVecCoordId x, core::ConstMultiVecDerivId v, SReal dt); ///< res = x + v.dt
     void accFromF(core::MultiVecDerivId a, core::ConstMultiVecDerivId f); ///< a = M^-1 . f
     /// Compute Energy
+    void computeEnergy(core::ConstMultiVecCoordId xId, SReal &kineticEnergy, SReal &potentialEnergy);
+    SOFA_ATTRIBUTE_DEPRECATED__COMPUTEENERGY_OVERLOAD()
     void computeEnergy(SReal &kineticEnergy, SReal &potentialEnergy);
     /// Compute the current force (given the latest propagated position and velocity)
+    void computeForce(core::MultiVecDerivId result, core::ConstMultiVecCoordId xId, core::ConstMultiVecDerivId vId,
+        bool clear = true, bool accumulate = true);
+    SOFA_ATTRIBUTE_DEPRECATED__COMPUTEFORCE_OVERLOAD()
     void computeForce(core::MultiVecDerivId result, bool clear = true, bool accumulate = true);
     /// Compute the current force delta (given the latest propagated displacement)
     SOFA_ATTRIBUTE_DEPRECATED__MECHANICALOPERATIONS_COMPUTEDF()

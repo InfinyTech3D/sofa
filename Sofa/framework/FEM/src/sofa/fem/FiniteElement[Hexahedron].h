@@ -29,10 +29,25 @@
 namespace sofa::fem
 {
 
+namespace detail
+{
+template <class ReferenceCoord>
+inline constexpr std::array<ReferenceCoord, 8> hexahedronReferenceElementNodes {{
+    {-1, -1, -1},
+    {1, -1, -1},
+    {1, 1, -1},
+    {-1, 1, -1},
+    {-1, -1, 1},
+    {1, -1, 1},
+    {1, 1, 1},
+    {-1, 1, 1},
+}};
+}
+
 template <class DataTypes>
 struct FiniteElement<sofa::geometry::Hexahedron, DataTypes>
 {
-    FINITEELEMENT_HEADER(sofa::geometry::Hexahedron, DataTypes, 3);
+    FINITEELEMENT_HEADER(sofa::geometry::Hexahedron, DataTypes, 3, 3);
     static_assert(spatial_dimensions == 3, "Hexahedrons are only defined in 3D");
 
     // Following the convention in sofa::geometry::Hexahedron:
@@ -48,16 +63,7 @@ struct FiniteElement<sofa::geometry::Hexahedron, DataTypes>
     //    /
     //   /
     //  Z
-    constexpr static std::array<ReferenceCoord, NumberOfNodesInElement> referenceElementNodes {{
-        {-1, -1, -1},
-        {1, -1, -1},
-        {1, 1, -1},
-        {-1, 1, -1},
-        {-1, -1, 1},
-        {1, -1, 1},
-        {1, 1, 1},
-        {-1, 1, 1},
-    }};
+    constexpr static std::array<ReferenceCoord, NumberOfNodesInElement> referenceElementNodes = detail::hexahedronReferenceElementNodes<ReferenceCoord>;
 
     static const sofa::type::vector<TopologyElement>& getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
     {
@@ -86,7 +92,7 @@ struct FiniteElement<sofa::geometry::Hexahedron, DataTypes>
 
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {
-            const auto& [xref, yref, zref] = referenceElementNodes[i];
+            const auto& [xref, yref, zref] = detail::hexahedronReferenceElementNodes<ReferenceCoord>[i];
             gradient[i] = 1./8. * Line(
                 xref * (1 + y * yref) * (1 + z * zref),
                 yref * (1 + x * xref) * (1 + z * zref),
@@ -94,26 +100,6 @@ struct FiniteElement<sofa::geometry::Hexahedron, DataTypes>
         }
 
         return gradient;
-    }
-
-    static constexpr auto quadraturePoints()
-    {
-        constexpr Real sqrt3 = 1.73205080757; //sqrt(3.)
-        constexpr Real sqrt3_1 = static_cast<Real>(1) / sqrt3;
-        constexpr Real one = static_cast<Real>(1);
-
-        constexpr std::array q {
-            std::pair{referenceElementNodes[0] * sqrt3_1, one},
-            std::pair{referenceElementNodes[1] * sqrt3_1, one},
-            std::pair{referenceElementNodes[2] * sqrt3_1, one},
-            std::pair{referenceElementNodes[3] * sqrt3_1, one},
-            std::pair{referenceElementNodes[4] * sqrt3_1, one},
-            std::pair{referenceElementNodes[5] * sqrt3_1, one},
-            std::pair{referenceElementNodes[6] * sqrt3_1, one},
-            std::pair{referenceElementNodes[7] * sqrt3_1, one},
-        };
-
-        return q;
     }
 };
 

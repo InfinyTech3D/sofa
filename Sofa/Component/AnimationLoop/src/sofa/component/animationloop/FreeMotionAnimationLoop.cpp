@@ -33,12 +33,12 @@
 #include <sofa/simulation/BehaviorUpdatePositionVisitor.h>
 #include <sofa/simulation/MechanicalOperations.h>
 #include <sofa/simulation/VectorOperations.h>
-#include <sofa/simulation/AnimateBeginEvent.h>
-#include <sofa/simulation/AnimateEndEvent.h>
+#include <sofa/simulation/events/AnimateBeginEvent.h>
+#include <sofa/simulation/events/AnimateEndEvent.h>
 #include <sofa/simulation/PropagateEventVisitor.h>
 #include <sofa/simulation/UpdateContextVisitor.h>
 #include <sofa/simulation/UpdateMappingVisitor.h>
-#include <sofa/simulation/UpdateMappingEndEvent.h>
+#include <sofa/simulation/events/UpdateMappingEndEvent.h>
 #include <sofa/simulation/UpdateBoundingBoxVisitor.h>
 #include <sofa/simulation/task/TaskScheduler.h>
 #include <sofa/simulation/CollisionVisitor.h>
@@ -231,14 +231,6 @@ void FreeMotionAnimationLoop::step(const sofa::core::ExecParams* params, SReal d
     node->execute(&beginVisitor);
 
     dmsg_info() << "beginVisitor performed - SolveVisitor for freeMotion is called" ;
-
-    // Mapping geometric stiffness coming from previous lambda.
-    {
-        SCOPED_TIMER("lambdaMultInvDt");
-        MechanicalVOpVisitor lambdaMultInvDt(params, cparams.lambda(), sofa::core::ConstMultiVecId::null(), cparams.lambda(), 1.0 / dt);
-        lambdaMultInvDt.setMapped(true);
-        node->executeVisitor(&lambdaMultInvDt);
-    }
 
     {
         SCOPED_TIMER("MechanicalComputeGeometricStiffness");

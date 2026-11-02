@@ -90,6 +90,7 @@ struct ForceField_test : public sofa::testing::BaseSimulationTest, public sofa::
     /// @name Tested API
     /// {
     static const unsigned char TEST_POTENTIAL_ENERGY = 1; ///< testing getPotentialEnergy function. The tests will only work with conservative forces (if dissipative forces such as viscosity or damping are computed, the test is wrong)
+    static const unsigned char TEST_ADD_K_TO_MATRIX = 2; ///< testing addKToMatrix function. Force fields implementing only buildStiffnessMatrix can exclude it.
     static const unsigned char TEST_ALL = UCHAR_MAX; ///< testing everything
     unsigned char flags; ///< testing options. (all by default). To be used with precaution.
     /// }
@@ -107,7 +108,7 @@ struct ForceField_test : public sofa::testing::BaseSimulationTest, public sofa::
         , flags( TEST_ALL )
     {
         using modeling::addNew;
-        simulation::Simulation* simu = sofa::simulation::getSimulation();
+        simulation::Simulation* simu = sofa::simulation::MainSimulation::getSimulation();
         assert(simu);
 
         ///  node 1
@@ -128,7 +129,7 @@ struct ForceField_test : public sofa::testing::BaseSimulationTest, public sofa::
         , flags( TEST_ALL )
     {
         using modeling::addNew;
-        simulation::Simulation* simu = sofa::simulation::getSimulation();
+        simulation::Simulation* simu = sofa::simulation::MainSimulation::getSimulation();
         assert(simu);
 
         /// Load the scene
@@ -156,7 +157,8 @@ struct ForceField_test : public sofa::testing::BaseSimulationTest, public sofa::
     {
         MechanicalResetForceVisitor resetForce(mparams, core::vec_id::write_access::force);
         node->execute(resetForce);
-        MechanicalComputeForceVisitor computeForce( mparams, core::vec_id::write_access::force );
+        MechanicalComputeForceVisitor computeForce( mparams, core::vec_id::write_access::force,
+            core::vec_id::read_access::position, core::vec_id::read_access::velocity );
         this->node->execute(computeForce);
     }
 
@@ -213,6 +215,8 @@ struct ForceField_test : public sofa::testing::BaseSimulationTest, public sofa::
 
     void checkAddKToMatrix(core::MechanicalParams* mparams, const VecDeriv& dX, const VecDeriv& changeOfForce)
     {
+        if( !(flags & TEST_ADD_K_TO_MATRIX) ) return;
+
         typedef sofa::linearalgebra::EigenBaseSparseMatrix<SReal> Sqmat;
         const std::size_t n = dX.size();
         const sofa::SignedIndex matrixSize = static_cast<sofa::SignedIndex>(n * DataTypes::deriv_total_size);

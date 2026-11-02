@@ -30,7 +30,7 @@ namespace
 {
 // See http://www.graphviz.org/doc/info/colors.html
 // The following is mostly the "set312" colors
-std::vector<std::string> SOFA_SIMULATION_CORE_API DEFAULTCOLORS = {
+std::vector<std::string> DEFAULTCOLORS = {
     /*Node                  =*/ "#dedede", // color 9
     /*Object                =*/ "#ffffff", // white
     /*Context               =*/ "#d7191c", // color spectral4/1
@@ -64,7 +64,7 @@ std::map<const std::string, int> colors = {
         {"InteractionForceField",   IFFIELD},
         {"ForceField",              FFIELD},
         {"BaseAnimationLoop",       SOLVER},
-        {"OdeSolver",               SOLVER}, // même valeur que ci-dessus
+        {"IntegrationScheme",               SOLVER},
         {"CollisionPipeline",       COLLISION},
         {"MechanicalMapping",       MMAPPING},
         {"Mapping",                 MAPPING},

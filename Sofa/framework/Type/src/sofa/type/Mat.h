@@ -708,17 +708,54 @@ public:
     /// Addition of the transposed of m
     constexpr void addTransposed(const Mat<C,L,real>& m) noexcept
     {
-        for(Size i=0; i<L; i++)
-            for(Size j=0; j<C; j++)
-                (*this)(i,j) += m(j,i);
+        if (canSelfTranspose(*this, m))
+        {
+            // m aliases *this: process each off-diagonal pair once, from values read
+            // before either of the two positions is written.
+            for(Size i=0; i<L; i++)
+            {
+                (*this)(i,i) += (*this)(i,i);
+                for(Size j=i+1; j<C; j++)
+                {
+                    const real sum = (*this)(i,j) + (*this)(j,i);
+                    (*this)(i,j) = sum;
+                    (*this)(j,i) = sum;
+                }
+            }
+        }
+        else
+        {
+            for(Size i=0; i<L; i++)
+                for(Size j=0; j<C; j++)
+                    (*this)(i,j) += m(j,i);
+        }
     }
 
     /// Subtraction of the transposed of m
     constexpr void subTransposed(const Mat<C,L,real>& m) noexcept
     {
-        for(Size i=0; i<L; i++)
-            for(Size j=0; j<C; j++)
-                (*this)(i,j) -= m(j,i);
+        if (canSelfTranspose(*this, m))
+        {
+            // m aliases *this: process each off-diagonal pair once, from values read
+            // before either of the two positions is written.
+            for(Size i=0; i<L; i++)
+            {
+                (*this)(i,i) = real{};
+                for(Size j=i+1; j<C; j++)
+                {
+                    const real mij = (*this)(i,j);
+                    const real mji = (*this)(j,i);
+                    (*this)(i,j) = mij - mji;
+                    (*this)(j,i) = mji - mij;
+                }
+            }
+        }
+        else
+        {
+            for(Size i=0; i<L; i++)
+                for(Size j=0; j<C; j++)
+                    (*this)(i,j) -= m(j,i);
+        }
     }
 
     /// Subtraction assignment operator.
@@ -1555,7 +1592,12 @@ constexpr Mat<3,3,real> multTranspose(const Mat<3,3,real>& m1, const Mat<3,3,rea
     return r;
 }
 
-#if not defined(SOFA_TYPE_MAT_CPP)
+// On Windows, an "extern template class __declspec(dllimport)" turns every member, including the
+// trivial accessors, into a call through the DLL import table: neither MSVC nor clang-cl inline
+// them (clang-cl refuses because they call non-imported std::array members).
+// All members are inline, so let client code instantiate them locally there. 
+// Mat.cpp still exports the explicit instantiations, so binaries built against the previous header keep working.
+#if not defined(SOFA_TYPE_MAT_CPP) && not defined(_WIN32)
 
 extern template class SOFA_TYPE_API Mat<1,1,float>;
 extern template class SOFA_TYPE_API Mat<1,1,double>;
